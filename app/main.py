@@ -1,7 +1,9 @@
 from datetime import datetime, timezone
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 
 from app import storage
 from app.business_rules import validate_status_transition
@@ -27,6 +29,13 @@ app.add_middleware(
     allow_headers=["*"],
     allow_credentials=False,
 )
+
+
+@app.get("/", include_in_schema=False)
+def serve_frontend() -> FileResponse:
+    """Serve the task board frontend from the project root."""
+    frontend_path = Path(__file__).resolve().parent.parent / "frontend" / "index.html"
+    return FileResponse(frontend_path)
 
 
 @app.get("/health", tags=["Health"])

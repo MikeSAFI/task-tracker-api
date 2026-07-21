@@ -6,16 +6,18 @@
         <title>Task Board</title>
         <style>
             :root {
-                --bg: #f3f5f8;
+                --bg: #eef4fb;
                 --surface: #ffffff;
-                --surface-soft: #f8fafc;
-                --border: #dbe2ea;
-                --text: #1f2937;
-                --muted: #6b7280;
-                --high: #dc2626;
-                --medium: #d97706;
-                --low: #15803d;
-                --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+                --surface-soft: #f7f9fc;
+                --border: #d9e4ee;
+                --text: #17233d;
+                --muted: #6b7b94;
+                --high: #d5364c;
+                --medium: #d08738;
+                --low: #1f8f5f;
+                --accent: #3b82f6;
+                --shadow: 0 24px 80px rgba(15, 23, 42, 0.12);
+                --card-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
             }
 
             * {
@@ -24,84 +26,102 @@
 
             body {
                 margin: 0;
-                font-family: "Segoe UI", Roboto, Arial, sans-serif;
-                background: var(--bg);
+                min-height: 100vh;
+                font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+                background: radial-gradient(circle at top left, rgba(59,130,246,0.15), transparent 32%),
+                    radial-gradient(circle at bottom right, rgba(56,189,248,0.12), transparent 28%),
+                    var(--bg);
                 color: var(--text);
             }
 
             main {
-                padding: 24px;
+                padding: 28px 24px 32px;
+                max-width: 1320px;
+                margin: 0 auto;
             }
 
             .app-header {
-                padding: 24px 24px 0;
+                padding: 32px 24px 24px;
             }
 
             .app-header-content {
                 display: flex;
                 justify-content: space-between;
-                align-items: center;
-                gap: 16px;
+                align-items: flex-start;
+                gap: 18px;
+                flex-wrap: wrap;
             }
 
             .app-header h1 {
-                margin: 0 0 6px;
-                font-size: 1.8rem;
+                margin: 0 0 10px;
+                font-size: clamp(2rem, 2.4vw, 2.6rem);
+                letter-spacing: -0.04em;
             }
 
             .app-header p {
                 margin: 0;
+                max-width: 45rem;
                 color: var(--muted);
+                line-height: 1.65;
+                font-size: 1rem;
             }
 
             .btn {
-                border: 1px solid var(--border);
+                border: none;
                 border-radius: 999px;
-                padding: 8px 14px;
-                font-size: 0.9rem;
-                font-weight: 600;
+                padding: 12px 20px;
+                font-size: 0.95rem;
+                font-weight: 700;
                 cursor: pointer;
+                transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+                box-shadow: 0 10px 30px rgba(59, 130, 246, 0.14);
+            }
+
+            .btn:hover {
+                transform: translateY(-1px);
             }
 
             .btn-primary {
-                background: var(--text);
-                border-color: var(--text);
-                color: var(--surface);
+                background: var(--accent);
+                color: #fff;
             }
 
             .btn-secondary {
-                background: var(--surface);
+                background: #ffffffee;
                 color: var(--text);
+                box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
             }
 
             .board {
                 display: grid;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: 20px;
+                gap: 24px;
                 align-items: start;
             }
 
             .board-column {
                 background: var(--surface-soft);
                 border: 1px solid var(--border);
-                border-radius: 16px;
-                padding: 16px;
-                min-height: 240px;
-                box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+                border-radius: 24px;
+                padding: 20px;
+                min-height: 280px;
+                box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75);
             }
 
             .column-header {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                margin-bottom: 14px;
+                gap: 12px;
+                margin-bottom: 18px;
             }
 
             .column-title {
+                margin: 0;
                 font-size: 0.95rem;
                 font-weight: 700;
                 text-transform: uppercase;
-                letter-spacing: 0.04em;
+                letter-spacing: 0.16em;
                 color: var(--text);
             }
 
@@ -109,33 +129,40 @@
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                min-width: 28px;
-                height: 28px;
-                padding: 0 8px;
+                min-width: 32px;
+                height: 32px;
+                padding: 0 10px;
                 border-radius: 999px;
-                background: var(--surface);
-                border: 1px solid var(--border);
-                color: var(--muted);
+                background: #ffffff;
+                border: 1px solid rgba(38, 68, 120, 0.08);
+                color: var(--text);
                 font-size: 0.8rem;
-                font-weight: 600;
+                font-weight: 700;
+                letter-spacing: 0.02em;
             }
 
             .task-card {
                 background: var(--surface);
-                border: 1px solid var(--border);
-                border-radius: 12px;
-                padding: 14px;
-                margin-bottom: 12px;
-                box-shadow: var(--shadow);
+                border: 1px solid rgba(31, 41, 55, 0.08);
+                border-radius: 18px;
+                padding: 18px;
+                margin-bottom: 16px;
+                box-shadow: var(--card-shadow);
                 display: flex;
                 flex-direction: column;
-                gap: 10px;
+                gap: 14px;
+                transition: transform 180ms ease, box-shadow 180ms ease;
+            }
+
+            .task-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
             }
 
             .task-title {
                 margin: 0;
-                font-size: 1rem;
-                font-weight: 600;
+                font-size: 1.05rem;
+                font-weight: 700;
                 color: var(--text);
             }
 
@@ -143,121 +170,132 @@
                 margin: 0;
                 color: var(--muted);
                 font-size: 0.95rem;
-                line-height: 1.45;
+                line-height: 1.65;
             }
 
             .task-meta {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                gap: 8px;
-                font-size: 0.85rem;
+                gap: 10px;
+                font-size: 0.9rem;
                 color: var(--muted);
+                flex-wrap: wrap;
             }
 
             .priority-pill {
                 display: inline-flex;
                 align-items: center;
-                padding: 4px 8px;
+                padding: 6px 10px;
                 border-radius: 999px;
                 font-size: 0.75rem;
                 font-weight: 700;
                 text-transform: uppercase;
-                letter-spacing: 0.04em;
+                letter-spacing: 0.08em;
             }
 
             .priority-pill.high {
-                background: #fee2e2;
+                background: rgba(213, 54, 76, 0.12);
                 color: var(--high);
             }
 
             .priority-pill.medium {
-                background: #fef3c7;
+                background: rgba(208, 135, 56, 0.14);
                 color: var(--medium);
             }
 
             .priority-pill.low {
-                background: #dcfce7;
+                background: rgba(31, 143, 95, 0.12);
                 color: var(--low);
             }
 
             .edit-btn {
-                border: 1px solid var(--border);
-                background: var(--surface-soft);
-                color: var(--text);
+                border: 1px solid rgba(59, 130, 246, 0.16);
+                background: #f7fbff;
+                color: var(--accent);
                 border-radius: 999px;
-                padding: 5px 10px;
-                font-size: 0.8rem;
+                padding: 8px 12px;
+                font-size: 0.85rem;
+                font-weight: 700;
                 cursor: pointer;
+                transition: background-color 160ms ease, transform 160ms ease;
+            }
+
+            .edit-btn:hover {
+                background: #e5f0ff;
+                transform: translateY(-1px);
             }
 
             .loading-skeleton {
-                background: var(--surface);
-                border: 1px solid var(--border);
-                border-radius: 12px;
-                padding: 14px;
-                margin-bottom: 12px;
-                box-shadow: var(--shadow);
+                background: linear-gradient(180deg, #ffffff 0%, #f6f8fb 100%);
+                border: 1px solid rgba(145, 163, 206, 0.18);
+                border-radius: 16px;
+                padding: 18px;
+                margin-bottom: 16px;
+                box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
             }
 
             .loading-skeleton .line {
-                height: 10px;
+                height: 12px;
                 border-radius: 999px;
-                background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 37%, #e5e7eb 63%);
+                background: linear-gradient(90deg, #e2e8f0 25%, #f8fafc 50%, #e2e8f0 75%);
                 background-size: 200% 100%;
-                animation: shimmer 1.2s infinite;
+                animation: shimmer 1.4s infinite;
             }
 
             .loading-skeleton .line + .line {
-                margin-top: 8px;
+                margin-top: 12px;
             }
 
             .loading-skeleton .line.short {
-                width: 60%;
+                width: 65%;
             }
 
             .empty-column {
-                border: 1px dashed var(--border);
-                border-radius: 12px;
-                padding: 22px 14px;
+                border: 2px dashed rgba(59, 130, 246, 0.25);
+                border-radius: 18px;
+                padding: 28px 20px;
                 text-align: center;
-                color: var(--muted);
-                background: #f9fbfd;
-                font-size: 0.95rem;
+                color: var(--accent);
+                background: rgba(59, 130, 246, 0.06);
+                font-size: 0.98rem;
             }
 
             .board-column.drag-over {
-                border-color: #60a5fa;
-                box-shadow: inset 0 0 0 1px #60a5fa;
+                border-color: rgba(59, 130, 246, 0.55);
+                box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.14);
+                background: #eef7ff;
             }
 
             .task-card.dragging {
-                opacity: 0.6;
+                opacity: 0.62;
+                transform: scale(0.98);
             }
 
             .board-message {
                 grid-column: 1 / -1;
-                background: #fef2f2;
-                border: 1px solid #fecaca;
-                color: #b91c1c;
-                border-radius: 12px;
-                padding: 12px 14px;
-                margin-bottom: 12px;
+                background: #fef3c7;
+                border: 1px solid #fde68a;
+                color: #92400e;
+                border-radius: 16px;
+                padding: 16px 18px;
+                margin-bottom: 18px;
+                font-weight: 600;
             }
 
             .error-card {
-                background: #fef2f2;
+                background: #fff1f2;
                 border: 1px solid #fecaca;
-                color: #b91c1c;
-                border-radius: 12px;
-                padding: 14px;
-                box-shadow: 0 4px 12px rgba(220, 38, 38, 0.12);
+                color: #9b1c1c;
+                border-radius: 18px;
+                padding: 18px;
+                box-shadow: 0 24px 48px rgba(220, 38, 38, 0.08);
             }
 
             .modal-overlay {
                 position: fixed;
                 inset: 0;
-                background: rgba(15, 23, 42, 0.55);
+                background: rgba(15, 23, 42, 0.62);
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -272,8 +310,8 @@
             .modal-card {
                 width: min(100%, 560px);
                 background: var(--surface);
-                border-radius: 16px;
-                box-shadow: var(--shadow);
+                border-radius: 24px;
+                box-shadow: 0 30px 80px rgba(15, 23, 42, 0.18);
                 overflow: hidden;
             }
 
@@ -281,76 +319,88 @@
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding: 18px 20px;
-                border-bottom: 1px solid var(--border);
+                padding: 22px 24px;
+                border-bottom: 1px solid rgba(219, 226, 238, 0.8);
             }
 
             .modal-header h2 {
                 margin: 0;
-                font-size: 1.1rem;
+                font-size: 1.25rem;
+                letter-spacing: -0.02em;
             }
 
             .modal-close {
                 border: none;
                 background: transparent;
                 color: var(--muted);
-                font-size: 1.25rem;
+                font-size: 1.5rem;
                 cursor: pointer;
+                line-height: 1;
             }
 
             .modal-form {
-                padding: 20px;
+                padding: 24px;
                 display: flex;
                 flex-direction: column;
-                gap: 14px;
+                gap: 18px;
             }
 
             .field-group {
                 display: flex;
                 flex-direction: column;
-                gap: 6px;
+                gap: 8px;
             }
 
             .field-group label {
-                font-size: 0.9rem;
-                font-weight: 600;
+                font-size: 0.95rem;
+                font-weight: 700;
                 color: var(--text);
             }
 
             .field-group input,
             .field-group select,
             .field-group textarea {
-                border: 1px solid var(--border);
-                border-radius: 10px;
-                padding: 10px 12px;
+                border: 1px solid rgba(145, 163, 206, 0.35);
+                border-radius: 16px;
+                padding: 14px 16px;
                 font: inherit;
                 color: var(--text);
-                background: var(--surface);
+                background: #f8fbff;
+                transition: border-color 160ms ease, box-shadow 160ms ease;
+            }
+
+            .field-group input:focus,
+            .field-group select:focus,
+            .field-group textarea:focus {
+                outline: none;
+                border-color: rgba(59, 130, 246, 0.55);
+                box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
             }
 
             .field-group textarea {
-                min-height: 96px;
+                min-height: 110px;
                 resize: vertical;
             }
 
             .field-error,
             .form-error {
-                font-size: 0.85rem;
+                font-size: 0.9rem;
                 color: var(--high);
             }
 
             .form-error {
                 border: 1px solid #fecaca;
                 background: #fef2f2;
-                border-radius: 10px;
-                padding: 10px 12px;
+                border-radius: 16px;
+                padding: 14px 16px;
             }
 
             .modal-actions {
                 display: flex;
                 justify-content: flex-end;
-                gap: 10px;
-                margin-top: 8px;
+                gap: 12px;
+                margin-top: 6px;
+                flex-wrap: wrap;
             }
 
             @keyframes shimmer {
@@ -364,15 +414,24 @@
 
             @media (max-width: 768px) {
                 main {
-                    padding: 16px;
+                    padding: 18px 16px 24px;
                 }
 
                 .app-header {
-                    padding: 20px 16px 0;
+                    padding: 24px 16px 12px;
                 }
 
                 .board {
                     grid-template-columns: 1fr;
+                }
+
+                .app-header-content {
+                    align-items: stretch;
+                }
+
+                .btn {
+                    width: 100%;
+                    justify-content: center;
                 }
             }
         </style>
@@ -439,12 +498,12 @@
         <script>
             const API_Base = "http://localhost:8000";
             const statuses = ["ToDo", "InProgress", "Done"];
-            const Status_labels = {
+            const StatusLabels = {
                 ToDo: "To Do",
                 InProgress: "In Progress",
                 Done: "Done"
             };
-            const Priority_order = { High: 0, Medium: 1, Low: 2 };
+            const PriorityOrder = { High: 0, Medium: 1, Low: 2 };
             let tasks = [];
             let boardState = "Loading";
             let draggedTaskId = null;
@@ -467,43 +526,41 @@
             }
 
             function getPriorityValue(priority) {
-                return Priority_order[priority] ?? 99;
+                return PriorityOrder[priority] ?? 99;
             }
 
             function getBoard() {
                 return document.getElementById("board");
             }
 
+            function createLoadingColumnMarkup() {
+                return `
+                    <div class="board-column">
+                        <div class="column-header">
+                            <div class="loading-skeleton">
+                                <div class="line short"></div>
+                            </div>
+                        </div>
+                        <div class="loading-skeleton">
+                            <div class="line"></div>
+                            <div class="line short"></div>
+                        </div>
+                        <div class="loading-skeleton">
+                            <div class="line"></div>
+                            <div class="line short"></div>
+                        </div>
+                    </div>
+                `;
+            }
+
             function renderLoading() {
                 boardMessage = "";
-                const board = getBoard();
-                board.innerHTML = statuses
-                    .map(
-                        () => `
-                            <div class="board-column">
-                                <div class="column-header">
-                                    <div class="loading-skeleton">
-                                        <div class="line short"></div>
-                                    </div>
-                                </div>
-                                <div class="loading-skeleton">
-                                    <div class="line"></div>
-                                    <div class="line short"></div>
-                                </div>
-                                <div class="loading-skeleton">
-                                    <div class="line"></div>
-                                    <div class="line short"></div>
-                                </div>
-                            </div>
-                        `
-                    )
-                    .join("");
+                getBoard().innerHTML = statuses.map(createLoadingColumnMarkup).join("");
             }
 
             function renderError(message) {
                 boardMessage = "";
-                const board = getBoard();
-                board.innerHTML = `
+                getBoard().innerHTML = `
                     <div class="error-card">${message}</div>
                 `;
             }
@@ -526,42 +583,17 @@
                 `;
             }
 
-            function handleDragStart(event) {
-                const card = event.target.closest(".task-card");
-                if (!card) {
-                    return;
-                }
-
-                draggedTaskId = card.dataset.taskId;
-                card.classList.add("dragging");
-                if (event.dataTransfer) {
-                    event.dataTransfer.effectAllowed = "move";
-                    event.dataTransfer.setData("text/plain", draggedTaskId);
-                }
+            function updateTaskLocally(taskId, updates) {
+                tasks = tasks.map((item) => (item.id === taskId ? { ...item, ...updates } : item));
             }
 
-            function handleDragOver(event) {
-                const column = event.target.closest(".board-column");
-                if (!column) {
-                    return;
-                }
-
-                event.preventDefault();
-                if (event.dataTransfer) {
-                    event.dataTransfer.dropEffect = "move";
-                }
-                column.classList.add("drag-over");
+            function clearDragState() {
+                draggedTaskId = null;
+                document.querySelectorAll(".board-column.drag-over").forEach((column) => column.classList.remove("drag-over"));
+                document.querySelectorAll(".task-card.dragging").forEach((card) => card.classList.remove("dragging"));
             }
 
-            function handleDragLeave(event) {
-                const column = event.target.closest(".board-column");
-                if (!column) {
-                    return;
-                }
-                column.classList.remove("drag-over");
-            }
-
-            function getTaskErrorMessage(payload) {
+            function getErrorMessage(payload) {
                 if (!payload) {
                     return "Could not update the task status. Please try again.";
                 }
@@ -601,12 +633,12 @@
             async function updateTaskStatus(taskId, targetStatus) {
                 const task = tasks.find((item) => item.id === taskId);
                 if (!task || task.status === targetStatus) {
-                    draggedTaskId = null;
+                    clearDragState();
                     return;
                 }
 
                 const previousStatus = task.status;
-                tasks = tasks.map((item) => (item.id === taskId ? { ...item, status: targetStatus } : item));
+                updateTaskLocally(taskId, { status: targetStatus });
                 boardMessage = "";
                 renderBoard();
 
@@ -621,30 +653,64 @@
 
                     const payload = await readResponsePayload(response);
                     if (!response.ok) {
-                        tasks = tasks.map((item) => (item.id === taskId ? { ...item, status: previousStatus } : item));
-                        boardMessage = getTaskErrorMessage(payload);
+                        updateTaskLocally(taskId, { status: previousStatus });
+                        boardMessage = getErrorMessage(payload);
                         renderBoard();
                         return;
                     }
 
                     if (payload && typeof payload === "object") {
-                        tasks = tasks.map((item) => (item.id === taskId ? payload : item));
+                        updateTaskLocally(taskId, payload);
                     }
+
                     boardMessage = "";
                     renderBoard();
                 } catch (error) {
-                    tasks = tasks.map((item) => (item.id === taskId ? { ...item, status: previousStatus } : item));
+                    updateTaskLocally(taskId, { status: previousStatus });
                     boardMessage = "Unable to reach the server. The task was not moved.";
                     renderBoard();
                     console.error(error);
                 } finally {
-                    draggedTaskId = null;
-                    document.querySelectorAll(".board-column.drag-over").forEach((column) => column.classList.remove("drag-over"));
-                    document.querySelectorAll(".task-card.dragging").forEach((card) => card.classList.remove("dragging"));
+                    clearDragState();
                 }
             }
 
-            async function handleDrop(event) {
+            function handleDragStart(event) {
+                const card = event.target.closest(".task-card");
+                if (!card) {
+                    return;
+                }
+
+                draggedTaskId = card.dataset.taskId;
+                card.classList.add("dragging");
+                if (event.dataTransfer) {
+                    event.dataTransfer.effectAllowed = "move";
+                    event.dataTransfer.setData("text/plain", draggedTaskId);
+                }
+            }
+
+            function handleDragOver(event) {
+                const column = event.target.closest(".board-column");
+                if (!column) {
+                    return;
+                }
+
+                event.preventDefault();
+                if (event.dataTransfer) {
+                    event.dataTransfer.dropEffect = "move";
+                }
+                column.classList.add("drag-over");
+            }
+
+            function handleDragLeave(event) {
+                const column = event.target.closest(".board-column");
+                if (!column) {
+                    return;
+                }
+                column.classList.remove("drag-over");
+            }
+
+            function handleDrop(event) {
                 const column = event.target.closest(".board-column");
                 if (!column) {
                     return;
@@ -660,58 +726,55 @@
 
                 const task = tasks.find((item) => item.id === draggedTaskId);
                 if (!task || task.status === targetStatus) {
-                    draggedTaskId = null;
+                    clearDragState();
                     return;
                 }
 
-                await updateTaskStatus(draggedTaskId, targetStatus);
+                updateTaskStatus(draggedTaskId, targetStatus);
+            }
+
+            function getGroupedTasks() {
+                const groupedTasks = Object.fromEntries(statuses.map((status) => [status, []]));
+                tasks.forEach((task) => {
+                    const taskStatus = task.status || "ToDo";
+                    if (groupedTasks[taskStatus]) {
+                        groupedTasks[taskStatus].push(task);
+                    }
+                });
+                return groupedTasks;
+            }
+
+            function sortByPriorityThenId(a, b) {
+                const priorityDifference = getPriorityValue(a.priority) - getPriorityValue(b.priority);
+                return priorityDifference !== 0 ? priorityDifference : Number(a.id) - Number(b.id);
+            }
+
+            function renderColumn(status, columnTasks) {
+                return `
+                    <div class="board-column" data-status="${status}">
+                        <div class="column-header">
+                            <h2 class="column-title">${StatusLabels[status]}</h2>
+                            <span class="column-count">${columnTasks.length}</span>
+                        </div>
+                        ${
+                            columnTasks.length
+                                ? columnTasks.map(renderTaskCard).join("")
+                                : '<div class="empty-column">Drop tasks here</div>'
+                        }
+                    </div>
+                `;
             }
 
             function renderBoard() {
-                const board = getBoard();
-                const groupedTasks = Object.fromEntries(statuses.map((status) => [status, []]));
-
-                tasks.forEach((task) => {
-                    const status = task.status || "ToDo";
-                    if (groupedTasks[status]) {
-                        groupedTasks[status].push(task);
-                    }
-                });
-
-                board.innerHTML = statuses
-                    .map((status) => {
-                        const columnTasks = groupedTasks[status]
-                            .slice()
-                            .sort((a, b) => {
-                                const priorityDifference = getPriorityValue(a.priority) - getPriorityValue(b.priority);
-                                if (priorityDifference !== 0) {
-                                    return priorityDifference;
-                                }
-                                return Number(a.id) - Number(b.id);
-                            });
-
-                        return `
-                            <div class="board-column" data-status="${status}">
-                                <div class="column-header">
-                                    <h2 class="column-title">${Status_labels[status]}</h2>
-                                    <span class="column-count">${columnTasks.length}</span>
-                                </div>
-                                ${
-                                    columnTasks.length
-                                        ? columnTasks.map(renderTaskCard).join("")
-                                        : '<div class="empty-column">Drop tasks here</div>'
-                                }
-                            </div>
-                        `;
-                    })
+                const groupedTasks = getGroupedTasks();
+                const boardHtml = statuses
+                    .map((status) => renderColumn(status, groupedTasks[status].slice().sort(sortByPriorityThenId)))
                     .join("");
 
-                if (boardMessage) {
-                    board.innerHTML = `<div class="board-message">${boardMessage}</div>${board.innerHTML}`;
-                }
+                getBoard().innerHTML = boardMessage ? `<div class="board-message">${boardMessage}</div>${boardHtml}` : boardHtml;
             }
 
-            function render() {
+            function renderBoardState() {
                 if (boardState === "Loading") {
                     renderLoading();
                     return;
@@ -742,22 +805,23 @@
 
             function clearTaskFormErrors() {
                 const { titleError, formError } = getTaskFormElements();
-                if (titleError) {
-                    titleError.textContent = "";
-                }
-                if (formError) {
-                    formError.textContent = "";
-                    formError.hidden = true;
-                }
+                titleError.textContent = "";
+                formError.textContent = "";
+                formError.hidden = true;
             }
 
-            function openTaskModal(mode, task = null) {
-                const elements = getTaskFormElements();
-                clearTaskFormErrors();
+            function resetTaskForm(elements) {
                 elements.form.reset();
                 elements.taskIdInput.value = "";
                 elements.statusInput.value = "ToDo";
                 elements.priorityInput.value = "Medium";
+                elements.assigneeInput.value = "";
+                clearTaskFormErrors();
+            }
+
+            function openTaskModal(mode, task = null) {
+                const elements = getTaskFormElements();
+                resetTaskForm(elements);
                 elements.modalTitle.textContent = mode === "edit" ? "Edit Task" : "New Task";
 
                 if (mode === "edit" && task) {
@@ -776,19 +840,35 @@
 
             function closeTaskModal() {
                 const elements = getTaskFormElements();
-                clearTaskFormErrors();
-                elements.form.reset();
-                elements.taskIdInput.value = "";
+                resetTaskForm(elements);
                 elements.modal.classList.add("hidden");
                 elements.modal.setAttribute("aria-hidden", "true");
             }
 
             function showTaskFormError(message) {
                 const { formError } = getTaskFormElements();
-                if (formError) {
-                    formError.textContent = message;
-                    formError.hidden = false;
+                formError.textContent = message;
+                formError.hidden = false;
+            }
+
+            function buildTaskPayload(elements, taskId) {
+                const payload = {
+                    title: elements.titleInput.value.trim(),
+                    description: elements.descriptionInput.value.trim() === "" ? "" : elements.descriptionInput.value,
+                    priority: elements.priorityInput.value,
+                    assignee: elements.assigneeInput.value.trim() === "" ? null : elements.assigneeInput.value.trim()
+                };
+
+                if (!taskId) {
+                    payload.status = elements.statusInput.value;
+                } else {
+                    const existingTask = tasks.find((item) => item.id === taskId);
+                    if (!existingTask || existingTask.status !== elements.statusInput.value) {
+                        payload.status = elements.statusInput.value;
+                    }
                 }
+
+                return payload;
             }
 
             async function handleTaskFormSubmit(event) {
@@ -804,21 +884,7 @@
                 }
 
                 const taskId = elements.taskIdInput.value;
-                const payload = {
-                    title,
-                    description: elements.descriptionInput.value.trim() === "" ? "" : elements.descriptionInput.value,
-                    priority: elements.priorityInput.value,
-                    assignee: elements.assigneeInput.value.trim() === "" ? null : elements.assigneeInput.value.trim(),
-                };
-
-                if (!taskId) {
-                    payload.status = elements.statusInput.value;
-                } else {
-                    const existingTask = tasks.find((item) => item.id === taskId);
-                    if (!existingTask || existingTask.status !== elements.statusInput.value) {
-                        payload.status = elements.statusInput.value;
-                    }
-                }
+                const payload = buildTaskPayload(elements, taskId);
                 const requestUrl = taskId ? `${API_Base}/tasks/${taskId}` : `${API_Base}/tasks`;
                 const requestMethod = taskId ? "PATCH" : "POST";
 
@@ -835,11 +901,11 @@
                     if (response.ok && (response.status === 200 || response.status === 201)) {
                         closeTaskModal();
                         await fetchTasks();
-                        render();
+                        renderBoardState();
                         return;
                     }
 
-                    showTaskFormError(getTaskErrorMessage(responseBody));
+                    showTaskFormError(getErrorMessage(responseBody));
                 } catch (error) {
                     showTaskFormError("Unable to reach the server. Please try again.");
                     console.error(error);
@@ -852,11 +918,7 @@
                 board.addEventListener("dragover", handleDragOver);
                 board.addEventListener("dragleave", handleDragLeave);
                 board.addEventListener("drop", handleDrop);
-                board.addEventListener("dragend", () => {
-                    draggedTaskId = null;
-                    document.querySelectorAll(".board-column.drag-over").forEach((column) => column.classList.remove("drag-over"));
-                    document.querySelectorAll(".task-card.dragging").forEach((card) => card.classList.remove("dragging"));
-                });
+                board.addEventListener("dragend", clearDragState);
                 board.addEventListener("click", (event) => {
                     const editButton = event.target.closest(".edit-btn");
                     if (!editButton) {
@@ -891,9 +953,9 @@
                 });
                 document.getElementById("task-form").addEventListener("submit", handleTaskFormSubmit);
 
-                render();
+                renderBoardState();
                 await fetchTasks();
-                render();
+                renderBoardState();
             }
 
             document.addEventListener("DOMContentLoaded", initBoard);

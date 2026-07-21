@@ -40,6 +40,13 @@ def test_create_task_unknown_field_returns_422(client):
     assert response.status_code == 422
 
 
+def test_root_serves_frontend_html(client):
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]
+    assert "Task Board" in response.text
+
+
 def test_list_tasks_empty_returns_200_and_empty_list(client):
     response = client.get("/tasks")
     assert response.status_code == 200
@@ -132,6 +139,15 @@ def test_patch_same_status_returns_422(client, created_task):
         json={"status": "ToDo"},
     )
     assert response.status_code == 422
+
+
+def test_patch_invalid_status_value_pending_returns_422(client, created_task):
+    response = client.patch(
+        f"/tasks/{created_task['id']}",
+        json={"status": "Pending"},
+    )
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["loc"][-1] == "status"
 
 
 def test_delete_existing_returns_204_no_body(client, created_task):
