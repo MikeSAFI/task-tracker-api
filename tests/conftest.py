@@ -22,3 +22,16 @@ def created_task(client):
     response = client.post("/tasks", json={"title": "fixture task"})
     assert response.status_code == 201
     return response.json()
+
+
+@pytest.fixture
+def created_task_with_due_date(client):
+    response = client.post(
+        "/tasks",
+        json={
+            "title": "task with due date",
+            "due_date": "2099-01-01",
+        },
+    )
+    assert response.status_code == 201
+    return response.json()
