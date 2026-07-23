@@ -4,6 +4,8 @@ A learning-focused REST API built with **Python** and **FastAPI**.
 Uses in-memory storage (no database) to focus on FastAPI fundamentals,
 Pydantic validation, and REST API design.
 
+**GitHub repository:** https://github.com/MikeSAFI/task-tracker-api
+
 ---
 
 ## Project Structure
@@ -26,6 +28,7 @@ task-tracker-api/
 ### 1. Clone / enter the project directory
 
 ```bash
+git clone https://github.com/MikeSAFI/task-tracker-api.git
 cd task-tracker-api
 ```
 
