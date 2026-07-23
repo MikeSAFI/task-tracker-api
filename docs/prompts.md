@@ -900,3 +900,330 @@ Output only the modified files:
 # FILE: tests/conftest.py
 
 # FILE: tests/test_tasks.py
+
+##########################################################################
+
+You are a senior Python backend engineer.
+
+Context:
+- This project is a FastAPI Task Tracker application.
+- The application uses:
+  - app/models.py
+  - app/storage.py
+  - app/business_rules.py
+  - app/main.py
+- The Due Dates & Overdue Filter feature is already implemented.
+- Tasks have:
+  - due_date: Optional[date]
+  - overdue: bool (calculated dynamically)
+
+A new business rule must now be enforced.
+
+============================================================
+NEW BUSINESS RULE
+============================================================
+
+A task due date must be:
+
+- today
+OR
+- a future date
+
+Invalid:
+
+- any due date earlier than today's date
+
+This validation applies to:
+
+- task creation
+- task updates
+
+If validation fails:
+
+- the task must NOT be saved
+- the update must NOT be applied
+- the API must return the same validation style already used by the application for business rule violations
+
+============================================================
+TASK
+============================================================
+
+Update ONLY:
+
+# app/business_rules.py
+# app/main.py
+
+Do NOT modify:
+
+- app/models.py
+- app/storage.py
+- tests
+- any other files
+
+============================================================
+FILE 1 - app/business_rules.py
+============================================================
+
+Add a new business rule function.
+
+Example name:
+
+validate_due_date_not_in_past()
+
+Requirements:
+
+- Accept an optional due_date.
+- If due_date is None:
+    validation passes.
+- If due_date is today:
+    validation passes.
+- If due_date is in the future:
+    validation passes.
+- If due_date is before today:
+    raise the same exception style already used in business_rules.py.
+
+Validation message:
+
+"Due date cannot be earlier than today"
+
+Keep the implementation:
+- small
+- readable
+- consistent with existing business rules
+
+Do NOT:
+- add classes
+- add services
+- add repositories
+
+============================================================
+FILE 2 - app/main.py
+============================================================
+
+Apply the new business rule:
+
+1. POST /tasks
+
+Before creating the task:
+- validate due_date
+
+If invalid:
+- return the existing business validation error response style
+
+2. PATCH /tasks/{id}
+
+Before updating:
+- validate due_date only when due_date is provided
+
+Allow:
+- due_date=None (removing due date)
+
+Reject:
+- past dates
+
+3. Keep all existing behavior unchanged.
+
+Do NOT:
+- move business logic into endpoints
+- duplicate validation logic
+- calculate dates inside endpoints
+
+Endpoints should only:
+- receive request
+- call business rule
+- call storage
+- return response
+
+============================================================
+HARD CONSTRAINTS
+============================================================
+
+- Do NOT modify models.py.
+- Do NOT modify storage.py.
+- Do NOT add databases.
+- Do NOT add SQLAlchemy.
+- Do NOT add ORM code.
+- Do NOT add authentication.
+- Do NOT add logging.
+- Do NOT add services.
+- Do NOT add repositories.
+- Do NOT refactor unrelated code.
+- Follow existing coding style.
+- Keep the implementation simple.
+
+============================================================
+OUTPUT
+============================================================
+
+Output only:
+
+# FILE: app/business_rules.py
+
+# FILE: app/main.py
+
+##############################################################################################
+
+Before writing code, give me an incremental plan for adding Due Dates + Overdue Filter feature to the frontend in small Copilot/Codex loops.
+Feature: [DESCRIBE FEATURE, e.g. Kanban board or create/edit modal]
+Current file(s): [LIST FILES]
+Output format:
+Return a table with columns: Step, File or selection, What changes, How I verify it.
+
+Constraints:
+- Do not write code yet.
+- Keep the plan : small changes, inspect the diff, run the app or tests, then refine.
+- Do not introduce frameworks, new backend features, or unrelated files.
+#####################################################################################
+You are a senior Python backend engineer.
+
+Context:
+- This is a FastAPI Task Tracker application.
+- The application already has the Due Dates & Overdue Filter feature.
+- A business rule is already implemented:
+
+Business Rule:
+- A due date provided during creation or update must be today or a future date.
+- A due date earlier than today is invalid and must be rejected.
+
+However, an issue was identified in the PATCH endpoint.
+
+============================================================
+BUG DESCRIPTION
+============================================================
+
+When updating an existing task:
+
+Example:
+- Task already exists with:
+    due_date = yesterday
+    overdue = true
+
+The team member updates another field:
+
+Example:
+{
+    "status": "InProgress"
+}
+
+The current implementation incorrectly applies the "due date cannot be earlier than today" validation and rejects the update.
+
+Expected behavior:
+
+- If the due date is NOT changed:
+    - Do not validate the existing due date.
+    - Allow updating other fields normally.
+
+- If the due date IS changed:
+    - Apply the existing business rule.
+    - Reject a new due date earlier than today.
+
+============================================================
+TASK
+============================================================
+
+Update ONLY the PATCH task flow.
+
+Files to review:
+
+- app/main.py
+- app/business_rules.py (only if required)
+
+Do NOT modify:
+- app/models.py
+- app/storage.py
+- unrelated endpoints
+
+============================================================
+REQUIRED BEHAVIOR
+============================================================
+
+For PATCH /tasks/{id}:
+
+Case 1:
+Existing task:
+
+due_date = yesterday
+
+Request:
+
+{
+    "status": "InProgress"
+}
+
+Expected:
+- Update succeeds.
+- Existing overdue due_date remains unchanged.
+- Task remains overdue.
+
+---
+
+Case 2:
+Existing task:
+
+due_date = yesterday
+
+Request:
+
+{
+    "due_date": "2026-08-01"
+}
+
+Expected:
+- Update succeeds.
+- New due_date is saved.
+
+---
+
+Case 3:
+Existing task:
+
+due_date = yesterday
+
+Request:
+
+{
+    "due_date": "2025-01-01"
+}
+
+Expected:
+- Update rejected.
+- Existing task remains unchanged.
+
+---
+
+Case 4:
+Existing task:
+
+due_date = yesterday
+
+Request:
+
+{
+    "due_date": null
+}
+
+Expected:
+- Update succeeds.
+- Due date is removed.
+
+============================================================
+IMPLEMENTATION RULES
+============================================================
+
+- Do not remove the existing due date validation rule.
+- Only apply validation when the incoming PATCH request contains a new due_date value.
+- Do not validate unchanged existing task data.
+- Keep business logic inside business_rules.py if that is the existing pattern.
+- Keep main.py responsible only for request handling and calling validation.
+- Do not add new features.
+- Do not refactor unrelated code.
+
+============================================================
+OUTPUT
+============================================================
+
+Output only the modified files:
+
+# FILE: app/main.py
+
+(and only include app/business_rules.py if it actually requires changes)

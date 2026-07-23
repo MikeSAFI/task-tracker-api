@@ -1,5 +1,8 @@
 from datetime import date, timedelta
 
+from app import storage
+from app.models import TaskCreate, TaskPriority
+
 
 def test_create_task_valid_returns_201_with_full_body(client):
     response = client.post(
@@ -226,16 +229,14 @@ def test_patch_task_removes_due_date_returns_200(client, created_task_with_due_d
 
 
 def test_task_with_past_due_date_is_overdue(client):
-    yesterday = (date.today() - timedelta(days=1)).isoformat()
-    response = client.post(
-        "/tasks",
-        json={
-            "title": "overdue task",
-            "due_date": yesterday,
-        },
-    )
-    assert response.status_code == 201
+    # Seed via storage: API rejects past due dates on create/update.
+    yesterday = date.today() - timedelta(days=1)
+    task = storage.add_task(TaskCreate(title="overdue task", due_date=yesterday))
+
+    response = client.get(f"/tasks/{task.id}")
+    assert response.status_code == 200
     assert response.json()["overdue"] is True
+    assert response.json()["due_date"] == yesterday.isoformat()
 
 
 def test_task_with_due_date_today_is_not_overdue(client):
@@ -258,11 +259,8 @@ def test_task_without_due_date_is_not_overdue(client):
 
 
 def test_filter_tasks_by_overdue_true_returns_only_overdue_tasks(client):
-    yesterday = (date.today() - timedelta(days=1)).isoformat()
-    overdue = client.post(
-        "/tasks",
-        json={"title": "overdue", "due_date": yesterday},
-    ).json()
+    yesterday = date.today() - timedelta(days=1)
+    overdue = storage.add_task(TaskCreate(title="overdue", due_date=yesterday))
     client.post("/tasks", json={"title": "future", "due_date": "2099-01-01"})
     client.post("/tasks", json={"title": "no due date"})
 
@@ -270,16 +268,13 @@ def test_filter_tasks_by_overdue_true_returns_only_overdue_tasks(client):
     assert response.status_code == 200
     tasks = response.json()
     assert len(tasks) == 1
-    assert tasks[0]["id"] == overdue["id"]
+    assert tasks[0]["id"] == overdue.id
     assert tasks[0]["overdue"] is True
 
 
 def test_filter_tasks_by_overdue_false_returns_only_non_overdue_tasks(client):
-    yesterday = (date.today() - timedelta(days=1)).isoformat()
-    overdue = client.post(
-        "/tasks",
-        json={"title": "overdue", "due_date": yesterday},
-    ).json()
+    yesterday = date.today() - timedelta(days=1)
+    overdue = storage.add_task(TaskCreate(title="overdue", due_date=yesterday))
     client.post("/tasks", json={"title": "future", "due_date": "2099-01-01"})
     client.post("/tasks", json={"title": "no due date"})
 
@@ -287,27 +282,17 @@ def test_filter_tasks_by_overdue_false_returns_only_non_overdue_tasks(client):
     assert response.status_code == 200
     tasks = response.json()
     assert len(tasks) == 2
-    assert all(task["id"] != overdue["id"] for task in tasks)
+    assert all(task["id"] != overdue.id for task in tasks)
     assert all(task["overdue"] is False for task in tasks)
 
 
 def test_filter_tasks_by_priority_and_overdue_returns_matching_tasks(client):
-    yesterday = (date.today() - timedelta(days=1)).isoformat()
-    high_overdue = client.post(
-        "/tasks",
-        json={
-            "title": "high overdue",
-            "priority": "High",
-            "due_date": yesterday,
-        },
-    ).json()
-    client.post(
-        "/tasks",
-        json={
-            "title": "low overdue",
-            "priority": "Low",
-            "due_date": yesterday,
-        },
+    yesterday = date.today() - timedelta(days=1)
+    high_overdue = storage.add_task(
+        TaskCreate(title="high overdue", priority=TaskPriority.HIGH, due_date=yesterday)
+    )
+    storage.add_task(
+        TaskCreate(title="low overdue", priority=TaskPriority.LOW, due_date=yesterday)
     )
     client.post(
         "/tasks",
@@ -322,6 +307,36 @@ def test_filter_tasks_by_priority_and_overdue_returns_matching_tasks(client):
     assert response.status_code == 200
     tasks = response.json()
     assert len(tasks) == 1
-    assert tasks[0]["id"] == high_overdue["id"]
+    assert tasks[0]["id"] == high_overdue.id
     assert tasks[0]["priority"] == "High"
     assert tasks[0]["overdue"] is True
+
+
+def test_create_task_with_past_due_date_returns_validation_error(client):
+    yesterday = (date.today() - timedelta(days=1)).isoformat()
+    response = client.post(
+        "/tasks",
+        json={
+            "title": "past due date",
+            "due_date": yesterday,
+        },
+    )
+    assert response.status_code == 422
+    assert response.json()["detail"] == "Due date cannot be earlier than today"
+    assert client.get("/tasks").json() == []
+
+
+def test_patch_task_with_past_due_date_returns_validation_error(client, created_task):
+    yesterday = (date.today() - timedelta(days=1)).isoformat()
+    response = client.patch(
+        f"/tasks/{created_task['id']}",
+        json={"due_date": yesterday},
+    )
+    assert response.status_code == 422
+    assert response.json()["detail"] == "Due date cannot be earlier than today"
+
+    stored = client.get(f"/tasks/{created_task['id']}")
+    assert stored.status_code == 200
+    assert stored.json() == created_task
+    assert stored.json()["due_date"] is None
+
