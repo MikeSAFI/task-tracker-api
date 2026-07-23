@@ -1227,3 +1227,1100 @@ Output only the modified files:
 # FILE: app/main.py
 
 (and only include app/business_rules.py if it actually requires changes)
+
+###############################################################################
+Tags / Labels
+###############################################################################
+
+You are a senior Python backend engineer.
+
+Context:
+- This project already has a working FastAPI Task Tracker application.
+- The application uses in-memory storage only.
+- The existing models.py already contains:
+  - TaskStatus
+  - TaskPriority
+  - TaskCreate
+  - TaskUpdate
+  - TaskResponse
+- The existing storage.py already contains:
+  - In-memory task storage
+  - add_task()
+  - get_all_tasks()
+  - get_task_by_id()
+  - update_task()
+  - delete_task()
+  - _reset()
+
+- Do NOT recreate or redesign the existing models or storage.
+- Only update them to support the Tags / Labels feature.
+
+Relevant User Stories:
+
+US-TAG-01
+As a team member, I want to add multiple tags to a task so that I can categorize and organize tasks more easily.
+
+Acceptance Criteria:
+- A team member can add one or more valid tags when creating a task.
+- Added tags are displayed with the task.
+- A task can be created without tags and continues to work like existing tasks.
+
+US-TAG-02
+As a team member, I want to update or remove task tags so that task categories remain accurate over time.
+
+Acceptance Criteria:
+- A team member can add new tags while editing an existing task.
+- A team member can remove existing tags from a task.
+- Updating tags does not change other task fields.
+
+US-TAG-03
+As a team member, I want tags to follow validation rules so that task labels remain consistent, clean, and easy to search.
+
+Acceptance Criteria:
+- A tag cannot be empty.
+- A tag cannot contain only whitespace.
+- A tag cannot exceed 255 characters.
+- A tag can contain only letters (A-Z, a-z) and numbers (0-9).
+- Tags containing spaces, symbols, or special characters are rejected.
+- Valid alphanumeric tags are saved successfully.
+
+US-TAG-04
+As a team member, I want to filter tasks by tag so that I can quickly find related tasks.
+
+Acceptance Criteria:
+- Tasks containing the selected tag can be retrieved.
+- Tasks without the selected tag are excluded from results.
+- Existing filtering behavior remains unchanged.
+
+============================================================
+FILE 1 - app/models.py
+============================================================
+
+Update the existing models.py only.
+
+Requirements:
+
+1. Update TaskCreate
+
+Add:
+
+tags: Optional[list[str]] = None
+
+Rules:
+- Tags are optional.
+- Creating a task without tags must continue working.
+- Keep all existing fields and validators unchanged.
+- Add tag validation only if validation already exists in the model pattern.
+
+Tag validation requirements:
+- Reject empty tags.
+- Reject whitespace-only tags.
+- Reject tags longer than 255 characters.
+- Reject tags containing characters other than letters and numbers.
+- Accept only:
+  - A-Z
+  - a-z
+  - 0-9
+
+Do not allow:
+- spaces
+- hyphens
+- underscores
+- symbols
+- special characters
+
+
+2. Update TaskUpdate
+
+Add:
+
+tags: Optional[list[str]] = None
+
+Rules:
+- Tags can be updated.
+- Tags can be removed.
+- Keep all existing update behavior unchanged.
+- Do not add unrelated fields.
+
+
+3. Update TaskResponse
+
+Add:
+
+tags: list[str] = []
+
+Rules:
+- Returned task responses include tags.
+- Existing response fields remain unchanged.
+- Do not add tag management information.
+- Do not introduce global tags.
+
+
+Do NOT modify:
+- TaskStatus
+- TaskPriority
+- Existing title validation
+- Existing due_date behavior
+- Existing ConfigDict configuration
+- Existing field names
+- Existing defaults unless required for tags support.
+
+============================================================
+FILE 2 - app/storage.py
+============================================================
+
+Update the existing storage.py only.
+
+Requirements:
+
+1. Task Creation
+
+Update add_task():
+
+- Store tags from TaskCreate.
+- If tags are not provided, store an empty list.
+- Preserve existing task creation behavior.
+
+
+2. Task Retrieval
+
+Update:
+
+- get_all_tasks()
+- get_task_by_id()
+
+Ensure:
+- Returned TaskResponse includes tags.
+- Existing behavior remains unchanged.
+
+
+3. Task Updates
+
+Update update_task():
+
+Requirements:
+- Support updating tags.
+- Allow adding tags.
+- Allow replacing existing tags.
+- Allow removing tags by providing an empty list.
+- Do not modify other task fields unless provided.
+- Continue using:
+
+payload.model_dump(exclude_unset=True)
+
+- Continue updating updated_at when changes occur.
+
+
+4. Tag Filtering
+
+Extend get_all_tasks() to support:
+
+tag: Optional[str] = None
+
+Filtering rules:
+
+- tag=None:
+  - Preserve existing behavior.
+
+- tag provided:
+  - Return only tasks containing that tag.
+
+Tag matching:
+- Exact match only.
+- Do not implement partial search.
+- Do not implement case conversion unless already supported by existing behavior.
+
+
+5. Preserve Existing Functionality
+
+Existing filters must continue working:
+
+- status
+- priority
+
+The new tag filter should work together with existing filters.
+
+Examples:
+- status + tag
+- priority + tag
+- status + priority + tag
+
+
+============================================================
+HARD CONSTRAINTS
+============================================================
+
+- Do NOT modify API routes.
+- Do NOT add endpoints.
+- Do NOT introduce databases.
+- Do NOT introduce SQLAlchemy.
+- Do NOT introduce ORM code.
+- Do NOT introduce services.
+- Do NOT introduce repositories.
+- Do NOT introduce global tag management.
+- Do NOT add predefined tags.
+- Do NOT add authentication.
+- Do NOT add permissions.
+- Do NOT add notifications.
+- Do NOT add unrelated refactoring.
+- Keep the implementation simple and consistent with the existing architecture.
+- Use Pydantic v2 syntax only.
+- Keep existing behavior unchanged for tasks without tags.
+
+============================================================
+OUTPUT
+============================================================
+
+Output only two code blocks, each preceded by:
+
+# FILE: app/models.py
+
+# FILE: app/storage.py
+
+###############################################################
+
+You are a senior Python backend code reviewer.
+
+Review the generated implementation of:
+
+- app/models.py
+- app/storage.py
+
+against the Tags / Labels feature requirements.
+
+IMPORTANT:
+- Do NOT modify any files.
+- Do NOT generate code.
+- Only review and report findings.
+- Mark each checkpoint as PASS or FAIL.
+- If FAIL, explain the issue briefly.
+
+============================================================
+REVIEW CHECKLIST
+============================================================
+
+1. Models Support Tags
+- TaskCreate contains optional tags: list[str].
+- TaskUpdate contains optional tags: list[str].
+- TaskResponse contains tags.
+- Existing task fields and validation remain unchanged.
+- Existing due_date behavior remains unchanged.
+- No unrelated fields were added.
+
+2. Tag Validation Rules
+- Tags are optional.
+- Tasks can be created without tags.
+- Empty tags are rejected.
+- Whitespace-only tags are rejected.
+- Tags longer than 255 characters are rejected.
+- Tags containing special characters are rejected.
+- Tags containing spaces are rejected.
+- Only letters (A-Z, a-z) and numbers (0-9) are accepted.
+- Valid alphanumeric tags are accepted.
+
+3. Tag Creation & Updates
+- Tasks can be created with one or multiple tags.
+- Tags are stored correctly.
+- Existing tasks without tags continue working.
+- Tags can be updated.
+- Existing tags can be replaced.
+- Tags can be removed by providing an empty list.
+- Updating tags does not modify other task fields.
+
+4. Storage Filtering
+- get_all_tasks supports an optional tag filter.
+- Filtering by tag returns only tasks containing that exact tag.
+- Tasks without the selected tag are excluded.
+- Existing filters still work:
+  - status
+  - priority
+- Tag filtering works together with existing filters.
+
+5. Scope & Architecture
+- Only models.py and storage.py were changed.
+- No database, ORM, services, repositories, or unnecessary layers were introduced.
+- No global tag management was added.
+- No predefined tag list was added.
+- No authentication or permissions were introduced.
+- Existing task behavior remains unchanged.
+- Implementation follows the mini-ADR decision.
+
+============================================================
+OUTPUT FORMAT
+============================================================
+
+# Tags / Labels Feature Review
+
+| Checkpoint | Result | Notes |
+|---|---|---|
+| 1. Models Support Tags | PASS/FAIL | |
+| 2. Tag Validation Rules | PASS/FAIL | |
+| 3. Tag Creation & Updates | PASS/FAIL | |
+| 4. Storage Filtering | PASS/FAIL | |
+| 5. Scope & Architecture | PASS/FAIL | |
+
+Final Verdict:
+- APPROVED if all checkpoints pass.
+- NEEDS FIXES if any checkpoint fails.
+################################################################
+
+You are a senior Python backend engineer.
+
+Context:
+- This project already has a working FastAPI Task Tracker REST API.
+- The application uses in-memory storage only.
+- app/models.py and app/storage.py have already been updated to support the Tags / Labels feature.
+- Your task is ONLY to update the API endpoints in app/main.py to expose this feature.
+
+Existing architecture:
+- main.py contains FastAPI routes.
+- Routes call storage functions.
+- Business logic belongs in storage.py, not in main.py.
+- Validation belongs in models.py/business rules if already implemented.
+- main.py should only handle request/response flow.
+
+============================================================
+RELEVANT USER STORIES
+============================================================
+
+US-TAG-01
+
+As a team member, I want to add multiple tags to a task so that I can categorize and organize tasks more easily.
+
+Acceptance Criteria:
+- A team member can add one or more valid tags when creating a task.
+- Added tags are returned with the task.
+- A task can be created without tags and continues to work like existing tasks.
+
+---
+
+US-TAG-02
+
+As a team member, I want to update or remove task tags so that task categories remain accurate over time.
+
+Acceptance Criteria:
+- A team member can add new tags while editing a task.
+- A team member can remove existing tags from a task.
+- Updating tags does not modify other task fields.
+
+---
+
+US-TAG-03
+
+As a team member, I want tags to follow validation rules so that task labels remain consistent, clean, and easy to search.
+
+Acceptance Criteria:
+- Empty tags are rejected.
+- Whitespace-only tags are rejected.
+- Tags longer than 255 characters are rejected.
+- Tags containing special characters are rejected.
+- Only letters (A-Z, a-z) and numbers (0-9) are allowed.
+
+---
+
+US-TAG-04
+
+As a team member, I want to filter tasks by tag so that I can quickly find related tasks.
+
+Acceptance Criteria:
+- Users can request tasks containing a specific tag.
+- Tasks without the selected tag are excluded.
+- Existing status and priority filtering continues working.
+
+============================================================
+FILE
+============================================================
+
+Update ONLY:
+
+# app/main.py
+
+Do NOT modify:
+- app/models.py
+- app/storage.py
+- tests
+- any other file
+
+============================================================
+REQUIREMENTS
+============================================================
+
+1. Preserve all existing endpoints.
+
+Do NOT:
+- rename routes
+- change HTTP methods
+- remove existing functionality
+- change existing response behavior unless required for tags support
+
+---
+
+2. Create Task Endpoint
+
+Update the existing POST /tasks endpoint.
+
+Requirements:
+
+- Continue using TaskCreate as the request model.
+- Accept optional tags automatically.
+- Pass the payload unchanged to storage.
+- Return the existing TaskResponse.
+
+Do NOT:
+- validate tags manually in main.py.
+- add tag processing logic.
+- duplicate model validation.
+
+---
+
+3. Get Tasks Endpoint
+
+Update the existing GET /tasks endpoint.
+
+Add a new optional query parameter:
+
+tag: Optional[str] = None
+
+Behavior:
+
+- tag is not provided:
+  - Keep existing behavior.
+
+- tag is provided:
+  - Return only tasks containing that exact tag.
+
+Existing filters must continue working:
+
+- status
+- priority
+
+Example combinations that must work:
+
+- status + tag
+- priority + tag
+- status + priority + tag
+
+The endpoint should only pass filtering parameters to storage.
+
+Do NOT:
+- filter tags inside main.py.
+- implement search logic in the route.
+
+---
+
+4. Get Task By ID Endpoint
+
+Update only if needed.
+
+Requirements:
+
+- Return tags with the task response.
+- Keep existing behavior unchanged.
+
+---
+
+5. Update Task Endpoint
+
+Update the existing PATCH/PUT endpoint.
+
+Requirements:
+
+- Continue using TaskUpdate.
+- Accept tags updates.
+- Allow:
+  - adding tags
+  - replacing existing tags
+  - removing tags using an empty list
+- Pass update payload to storage.
+- Return updated TaskResponse.
+
+Do NOT:
+- implement tag update logic inside main.py.
+- manipulate tag lists in the endpoint.
+
+---
+
+6. Delete Task Endpoint
+
+Do not change behavior.
+
+---
+
+============================================================
+HARD CONSTRAINTS
+============================================================
+
+- Do NOT modify models.py.
+- Do NOT modify storage.py.
+- Do NOT add new endpoints.
+- Do NOT add authentication.
+- Do NOT add users.
+- Do NOT add permissions.
+- Do NOT add global tag management.
+- Do NOT add predefined tags.
+- Do NOT add reminders.
+- Do NOT add notifications.
+- Do NOT add background jobs.
+- Do NOT add databases.
+- Do NOT add ORM code.
+- Do NOT add services or repositories.
+- Do NOT refactor unrelated code.
+- Do NOT move business logic into endpoints.
+- Keep the implementation small and consistent with the existing project.
+
+============================================================
+OUTPUT
+============================================================
+
+Output only one code block preceded by:
+
+# FILE: app/main.py
+
+############################################################
+You are a senior Python developer reviewing and extending existing pytest tests for a FastAPI Task Tracker app.
+
+Context files:
+@app/main.py
+@app/models.py
+@app/storage.py
+@app/business_rules.py
+@tests/conftest.py
+@tests/test_tasks.py
+
+The existing test suite already covers the current Task Tracker functionality.
+
+Your task:
+Update the existing tests to add coverage for the new feature:
+
+Tags / Labels
+
+IMPORTANT:
+- Do NOT rewrite the existing tests.
+- Do NOT remove existing tests.
+- Do NOT rename existing tests.
+- Keep all current test behavior unchanged.
+- Add only the required tests for this new feature.
+- Follow the existing test style and structure.
+
+============================================================
+FEATURE REQUIREMENTS TO TEST
+============================================================
+
+Tags:
+
+- Tasks can optionally have multiple tags.
+- Tasks can be created with or without tags.
+- Tags can be updated.
+- Tags can be removed.
+- Tags are returned with task responses.
+
+Tag validation:
+
+- Empty tags are rejected.
+- Whitespace-only tags are rejected.
+- Tags longer than 255 characters are rejected.
+- Tags containing spaces are rejected.
+- Tags containing special characters are rejected.
+- Only letters (A-Z, a-z) and numbers (0-9) are accepted.
+
+Filtering:
+
+- GET /tasks supports:
+  tag=<tag>
+
+- Tag filtering:
+  - returns only tasks containing the selected tag.
+  - does exact tag matching only.
+
+- Existing filters must continue working:
+  - status
+  - priority
+
+============================================================
+UPDATE FILES
+============================================================
+
+Update only:
+
+# tests/conftest.py
+# tests/test_tasks.py
+
+============================================================
+FILE 1 - tests/conftest.py
+============================================================
+
+Review the existing fixtures.
+
+Add only if needed:
+
+Fixture:
+created_task_with_tags
+
+Behavior:
+- Creates a task using POST /tasks
+- Payload:
+
+{
+    "title": "task with tags",
+    "tags": [
+        "backend",
+        "FastAPI123"
+    ]
+}
+
+- Assert status_code == 201
+- Return response JSON
+
+Do not modify existing fixtures unless required.
+
+============================================================
+FILE 2 - tests/test_tasks.py
+============================================================
+
+Add the following tests.
+
+Use the existing naming and style.
+
+============================================================
+POST /tasks - Tags Creation
+============================================================
+
+1. test_create_task_with_valid_tags_returns_201
+
+Verify:
+- Task creation succeeds.
+- Response contains the provided tags.
+- Multiple tags are stored correctly.
+
+---
+
+2. test_create_task_without_tags_returns_201
+
+Verify:
+- Task creation succeeds without tags.
+- Response contains an empty list or expected default value.
+- Existing task behavior remains unchanged.
+
+---
+
+3. test_create_task_with_empty_tag_returns_422
+
+Verify:
+- Empty tag value is rejected.
+
+Example:
+
+{
+    "tags": [""]
+}
+
+---
+
+4. test_create_task_with_whitespace_tag_returns_422
+
+Verify:
+- Whitespace-only tags are rejected.
+
+Example:
+
+{
+    "tags": ["   "]
+}
+
+---
+
+5. test_create_task_with_tag_over_255_characters_returns_422
+
+Verify:
+- A tag longer than 255 characters is rejected.
+
+---
+
+6. test_create_task_with_special_character_tag_returns_422
+
+Verify:
+- Tags containing special characters are rejected.
+
+Examples:
+
+"backend-api"
+"test_tag"
+"api@123"
+
+---
+
+7. test_create_task_with_alphanumeric_tag_returns_201
+
+Verify:
+- Tags containing only letters and numbers are accepted.
+
+Examples:
+
+"Backend"
+"API123"
+
+============================================================
+GET /tasks - Tag Response
+============================================================
+
+8. test_get_task_returns_tags
+
+Verify:
+- Task response includes tags.
+
+============================================================
+PATCH /tasks/{id} - Tags Updates
+============================================================
+
+9. test_patch_task_updates_tags_returns_200
+
+Verify:
+- Existing task tags can be replaced or updated.
+- Response contains the new tags.
+
+---
+
+10. test_patch_task_removes_tags_returns_200
+
+Verify:
+- Existing tags can be removed by sending an empty list.
+- Response contains no tags.
+
+---
+
+11. test_patch_task_with_invalid_tag_returns_422
+
+Verify:
+- Updating a task with invalid tags is rejected.
+- Existing tags remain unchanged.
+
+============================================================
+GET /tasks - Tag Filtering
+============================================================
+
+12. test_filter_tasks_by_tag_returns_matching_tasks
+
+Create:
+
+- Task with tag "backend"
+- Task with tag "frontend"
+- Task without tags
+
+Call:
+
+GET /tasks?tag=backend
+
+Verify:
+- Only tasks containing "backend" are returned.
+
+---
+
+13. test_filter_tasks_by_unknown_tag_returns_empty_list
+
+Create:
+- Tasks with different tags.
+
+Call:
+
+GET /tasks?tag=unknown
+
+Verify:
+- Empty list is returned.
+
+---
+
+============================================================
+Combined filters
+============================================================
+
+14. test_filter_tasks_by_priority_and_tag_returns_matching_tasks
+
+Create:
+
+- HIGH priority task with tag "backend"
+- LOW priority task with tag "backend"
+- HIGH priority task with tag "frontend"
+
+Call:
+
+GET /tasks?priority=High&tag=backend
+
+Verify:
+- Only HIGH priority tasks containing "backend" are returned.
+
+============================================================
+HARD CONSTRAINTS
+============================================================
+
+- Use pytest only.
+- Use TestClient only.
+- Do not use AsyncClient.
+- Do not mock storage.
+- Keep using the existing reset fixture.
+- Do not modify application code.
+- Do not add unrelated tests.
+- Do not duplicate existing CRUD tests unnecessarily.
+- Keep tests focused only on Tags / Labels.
+
+Output only the modified files:
+
+# FILE: tests/conftest.py
+
+# FILE: tests/test_tasks.py
+#####################################################################
+Before writing code, give me an incremental plan for adding Tags / Labels feature to the frontend in small Copilot/Codex loops.
+Feature: [DESCRIBE FEATURE, e.g. Kanban board or create/edit modal]
+Current file(s): [LIST FILES]
+Output format:
+Return a table with columns: Step, File or selection, What changes, How I verify it.
+
+Constraints:
+- Do not write code yet.
+- Keep the plan : small changes, inspect the diff, run the app or tests, then refine.
+- Do not introduce frameworks, new backend features, or unrelated files.
+
+############################################################################################
+You are a senior frontend developer reviewing a Task Tracker web application UI.
+
+Context:
+- The application has a Create Task form and an Update Task form.
+- The forms are displayed inside modal/dialog components.
+- The current issue is that the form content is too large for the screen.
+- On smaller screens, the user cannot see or access the Save button because it is below the visible area.
+
+============================================================
+TASK
+============================================================
+
+Fix the Create Task and Update Task modal layout so the forms are fully usable on all screen sizes.
+
+============================================================
+REQUIREMENTS
+============================================================
+
+1. Modal/Dialog Layout
+
+Update the modal/dialog configuration to:
+
+- Fit within the viewport height.
+- Allow scrolling only inside the form content area.
+- Keep the action buttons (Save/Cancel) always visible.
+
+Expected behavior:
+
+- User opens Create Task modal:
+  - All fields are accessible.
+  - Save button is visible without needing browser zoom.
+
+- User opens Update Task modal:
+  - All fields are accessible.
+  - Save button is visible.
+
+---
+
+2. Responsive Behavior
+
+Ensure the dialogs work on:
+
+- Desktop screens.
+- Laptop screens.
+- Smaller resolutions.
+- Mobile/tablet widths if supported by the existing application.
+
+Do not break the existing responsive design.
+
+---
+
+3. Form Behavior
+
+Do NOT:
+- remove fields.
+- change validation rules.
+- change API calls.
+- change form submission logic.
+- change existing functionality.
+
+Only update the layout and scrolling behavior.
+
+---
+
+4. UI Requirements
+
+The preferred structure:
+
+- Dialog container:
+  - limited maximum height based on viewport.
+
+- Form content:
+  - scrollable area.
+
+- Action section:
+  - fixed/visible at the bottom.
+
+Example behavior:
+
++-------------------------+
+| Create Task             |
+|-------------------------|
+| Title                   |
+| Description             |
+| Status                  |
+| Priority                |
+| Assignee                |
+| Due Date                |
+| Tags                    |
+|                         |
+|   (scroll area)         |
+|-------------------------|
+| Cancel       Save       |
++-------------------------+
+
+---
+
+============================================================
+CONSTRAINTS
+============================================================
+
+- Do not redesign the UI.
+- Do not change colors, themes, or components unnecessarily.
+- Do not change backend code.
+- Do not change API contracts.
+- Keep the existing component structure.
+- Make the smallest change required to fix the usability issue.
+
+============================================================
+OUTPUT
+============================================================
+
+Output only the modified frontend files.
+For each file, prefix with:
+
+# FILE: path/to/file
+
+##################################################################
+
+You are a senior frontend developer updating an existing Task Tracker web application.
+
+Context:
+- The application already supports filtering tasks by tag.
+- The tag filter is already implemented in the frontend.
+- Users can select a tag and view filtered tasks.
+- The current issue is that there is no simple way to clear the selected tag filter.
+
+============================================================
+TASK
+============================================================
+
+Add a "Clear" button for the Tag Filter.
+
+The change should only affect the tag filtering UI behavior.
+
+============================================================
+REQUIREMENTS
+============================================================
+
+1. Tag Filter UI
+
+Update the existing tag filter component/control.
+
+Add a Clear button that:
+
+- Is visible when a tag filter is selected.
+- Clears the selected tag when clicked.
+- Restores the normal task list without tag filtering.
+
+Expected behavior:
+
+Before:
+
+Selected tag:
+backend
+
+Task list:
+Only tasks with "backend"
+
+After clicking Clear:
+
+Selected tag:
+(empty)
+
+Task list:
+All tasks (respecting other active filters)
+
+---
+
+2. Interaction with Existing Filters
+
+The Clear Tag Filter button must:
+
+- Remove only the tag filter.
+- Keep other filters unchanged.
+
+Examples:
+
+If the user has:
+
+- Status = InProgress
+- Priority = High
+- Tag = backend
+
+Clicking Clear:
+
+Result:
+- Status remains InProgress.
+- Priority remains High.
+- Tag is cleared.
+
+---
+
+3. UI Behavior
+
+Requirements:
+
+- Match the existing application style.
+- Use existing UI components and patterns.
+- Do not redesign the filter section.
+- Do not add unnecessary components.
+
+The button can:
+- Be hidden when no tag is selected.
+OR
+- Be disabled when no tag is selected.
+
+Follow the existing filter behavior.
+
+---
+
+4. Data/API Behavior
+
+Do NOT:
+- Modify backend endpoints.
+- Modify API contracts.
+- Add new API calls.
+
+When clearing the tag:
+- Update the frontend filter state.
+- Trigger the existing task loading/filtering mechanism.
+
+---
+
+============================================================
+CONSTRAINTS
+============================================================
+
+- Do not modify backend code.
+- Do not change tag filtering logic.
+- Do not change other filters.
+- Do not change task CRUD functionality.
+- Keep the implementation minimal.
+- Follow the existing frontend architecture and coding style.
+
+============================================================
+OUTPUT
+============================================================
+
+Output only the modified frontend files.
+
+For each file, prefix with:
+
+# FILE: path/to/file

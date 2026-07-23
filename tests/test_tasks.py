@@ -340,3 +340,164 @@ def test_patch_task_with_past_due_date_returns_validation_error(client, created_
     assert stored.json() == created_task
     assert stored.json()["due_date"] is None
 
+
+def test_create_task_with_valid_tags_returns_201(client):
+    response = client.post(
+        "/tasks",
+        json={
+            "title": "tagged task",
+            "tags": ["backend", "FastAPI123"],
+        },
+    )
+    assert response.status_code == 201
+    data = response.json()
+    assert data["tags"] == ["backend", "FastAPI123"]
+
+
+def test_create_task_without_tags_returns_201(client):
+    response = client.post("/tasks", json={"title": "task without tags"})
+    assert response.status_code == 201
+    data = response.json()
+    assert data["tags"] == []
+
+
+def test_create_task_with_empty_tag_returns_422(client):
+    response = client.post(
+        "/tasks",
+        json={
+            "title": "empty tag",
+            "tags": [""],
+        },
+    )
+    assert response.status_code == 422
+
+
+def test_create_task_with_whitespace_tag_returns_422(client):
+    response = client.post(
+        "/tasks",
+        json={
+            "title": "whitespace tag",
+            "tags": ["   "],
+        },
+    )
+    assert response.status_code == 422
+
+
+def test_create_task_with_tag_over_255_characters_returns_422(client):
+    response = client.post(
+        "/tasks",
+        json={
+            "title": "long tag",
+            "tags": ["a" * 256],
+        },
+    )
+    assert response.status_code == 422
+
+
+def test_create_task_with_special_character_tag_returns_422(client):
+    for tag in ["backend-api", "test_tag", "api@123"]:
+        response = client.post(
+            "/tasks",
+            json={
+                "title": "special char tag",
+                "tags": [tag],
+            },
+        )
+        assert response.status_code == 422
+
+
+def test_create_task_with_alphanumeric_tag_returns_201(client):
+    response = client.post(
+        "/tasks",
+        json={
+            "title": "alphanumeric tags",
+            "tags": ["Backend", "API123"],
+        },
+    )
+    assert response.status_code == 201
+    assert response.json()["tags"] == ["Backend", "API123"]
+
+
+def test_get_task_returns_tags(client, created_task_with_tags):
+    response = client.get(f"/tasks/{created_task_with_tags['id']}")
+    assert response.status_code == 200
+    data = response.json()
+    assert "tags" in data
+    assert data["tags"] == ["backend", "FastAPI123"]
+
+
+def test_patch_task_updates_tags_returns_200(client, created_task_with_tags):
+    response = client.patch(
+        f"/tasks/{created_task_with_tags['id']}",
+        json={"tags": ["frontend", "React"]},
+    )
+    assert response.status_code == 200
+    assert response.json()["tags"] == ["frontend", "React"]
+
+
+def test_patch_task_removes_tags_returns_200(client, created_task_with_tags):
+    response = client.patch(
+        f"/tasks/{created_task_with_tags['id']}",
+        json={"tags": []},
+    )
+    assert response.status_code == 200
+    assert response.json()["tags"] == []
+
+
+def test_patch_task_with_invalid_tag_returns_422(client, created_task_with_tags):
+    response = client.patch(
+        f"/tasks/{created_task_with_tags['id']}",
+        json={"tags": ["invalid-tag"]},
+    )
+    assert response.status_code == 422
+
+    stored = client.get(f"/tasks/{created_task_with_tags['id']}")
+    assert stored.status_code == 200
+    assert stored.json() == created_task_with_tags
+    assert stored.json()["tags"] == ["backend", "FastAPI123"]
+
+
+def test_filter_tasks_by_tag_returns_matching_tasks(client):
+    client.post("/tasks", json={"title": "backend task", "tags": ["backend"]})
+    client.post("/tasks", json={"title": "frontend task", "tags": ["frontend"]})
+    client.post("/tasks", json={"title": "no tags task"})
+
+    response = client.get("/tasks", params={"tag": "backend"})
+    assert response.status_code == 200
+    tasks = response.json()
+    assert len(tasks) == 1
+    assert tasks[0]["title"] == "backend task"
+    assert "backend" in tasks[0]["tags"]
+
+
+def test_filter_tasks_by_unknown_tag_returns_empty_list(client):
+    client.post("/tasks", json={"title": "backend task", "tags": ["backend"]})
+    client.post("/tasks", json={"title": "frontend task", "tags": ["frontend"]})
+
+    response = client.get("/tasks", params={"tag": "unknown"})
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_filter_tasks_by_priority_and_tag_returns_matching_tasks(client):
+    client.post(
+        "/tasks",
+        json={"title": "high backend", "priority": "High", "tags": ["backend"]},
+    )
+    client.post(
+        "/tasks",
+        json={"title": "low backend", "priority": "Low", "tags": ["backend"]},
+    )
+    client.post(
+        "/tasks",
+        json={"title": "high frontend", "priority": "High", "tags": ["frontend"]},
+    )
+
+    response = client.get("/tasks", params={"priority": "High", "tag": "backend"})
+    assert response.status_code == 200
+    tasks = response.json()
+    assert len(tasks) == 1
+    assert tasks[0]["title"] == "high backend"
+    assert tasks[0]["priority"] == "High"
+    assert "backend" in tasks[0]["tags"]
+

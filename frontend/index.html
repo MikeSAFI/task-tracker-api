@@ -233,6 +233,31 @@
                 letter-spacing: 0.06em;
             }
 
+            .task-tags {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .tag-chip {
+                display: inline-flex;
+                align-items: center;
+                padding: 4px 10px;
+                border-radius: 999px;
+                background: rgba(59, 130, 246, 0.1);
+                color: var(--accent);
+                font-size: 0.75rem;
+                font-weight: 700;
+                letter-spacing: 0.02em;
+            }
+
+            .field-hint {
+                margin: 0;
+                font-size: 0.85rem;
+                color: var(--muted);
+                line-height: 1.4;
+            }
+
             .header-actions {
                 display: flex;
                 align-items: center;
@@ -261,6 +286,55 @@
                 height: 16px;
                 accent-color: var(--accent);
                 cursor: pointer;
+            }
+
+            .tag-filter {
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px 14px;
+                border-radius: 999px;
+                background: #ffffffee;
+                border: 1px solid rgba(38, 68, 120, 0.08);
+                box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+                color: var(--text);
+                font-size: 0.95rem;
+                font-weight: 700;
+            }
+
+            .tag-filter input {
+                border: none;
+                background: transparent;
+                font: inherit;
+                font-weight: 600;
+                color: var(--text);
+                min-width: 140px;
+                outline: none;
+            }
+
+            .tag-filter input::placeholder {
+                color: var(--muted);
+                font-weight: 600;
+            }
+
+            .tag-filter-clear {
+                border: none;
+                background: transparent;
+                color: var(--accent);
+                padding: 0;
+                font: inherit;
+                font-size: 0.85rem;
+                font-weight: 700;
+                cursor: pointer;
+                white-space: nowrap;
+            }
+
+            .tag-filter-clear:hover {
+                text-decoration: underline;
+            }
+
+            .tag-filter-clear[hidden] {
+                display: none;
             }
 
             .edit-btn {
@@ -355,6 +429,7 @@
                 justify-content: center;
                 padding: 20px;
                 z-index: 1000;
+                overflow: hidden;
             }
 
             .modal-overlay.hidden {
@@ -363,6 +438,10 @@
 
             .modal-card {
                 width: min(100%, 560px);
+                max-height: calc(100vh - 40px);
+                max-height: calc(100dvh - 40px);
+                display: flex;
+                flex-direction: column;
                 background: var(--surface);
                 border-radius: 24px;
                 box-shadow: 0 30px 80px rgba(15, 23, 42, 0.18);
@@ -375,6 +454,7 @@
                 align-items: center;
                 padding: 22px 24px;
                 border-bottom: 1px solid rgba(219, 226, 238, 0.8);
+                flex-shrink: 0;
             }
 
             .modal-header h2 {
@@ -393,10 +473,22 @@
             }
 
             .modal-form {
-                padding: 24px;
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+                min-height: 0;
+                overflow: hidden;
+            }
+
+            .modal-form-body {
+                padding: 24px 24px 8px;
                 display: flex;
                 flex-direction: column;
                 gap: 18px;
+                overflow-y: auto;
+                flex: 1;
+                min-height: 0;
+                -webkit-overflow-scrolling: touch;
             }
 
             .field-group {
@@ -453,8 +545,11 @@
                 display: flex;
                 justify-content: flex-end;
                 gap: 12px;
-                margin-top: 6px;
                 flex-wrap: wrap;
+                flex-shrink: 0;
+                padding: 16px 24px 24px;
+                border-top: 1px solid rgba(219, 226, 238, 0.8);
+                background: var(--surface);
             }
 
             @keyframes shimmer {
@@ -489,13 +584,30 @@
                     align-items: stretch;
                 }
 
-                .overdue-filter {
+                .overdue-filter,
+                .tag-filter {
                     justify-content: flex-start;
+                    width: 100%;
+                }
+
+                .tag-filter input {
+                    flex: 1;
+                    min-width: 0;
                 }
 
                 .btn {
                     width: 100%;
                     justify-content: center;
+                }
+
+                .modal-overlay {
+                    padding: 12px;
+                    align-items: flex-start;
+                }
+
+                .modal-card {
+                    max-height: calc(100vh - 24px);
+                    max-height: calc(100dvh - 24px);
                 }
             }
         </style>
@@ -508,6 +620,11 @@
                     <p>Drag tasks between columns to update their status</p>
                 </div>
                 <div class="header-actions">
+                    <div class="tag-filter">
+                        <label for="tag-filter">Tag</label>
+                        <input id="tag-filter" type="text" placeholder="Filter by tag" autocomplete="off" />
+                        <button id="tag-filter-clear" class="tag-filter-clear" type="button" hidden>Clear</button>
+                    </div>
                     <label class="overdue-filter" for="overdue-filter">
                         <input id="overdue-filter" type="checkbox" />
                         Overdue only
@@ -527,41 +644,49 @@
                     <button id="modal-close-btn" class="modal-close" type="button" aria-label="Close">×</button>
                 </div>
                 <form id="task-form" class="modal-form">
-                    <div id="form-error" class="form-error" role="alert" hidden></div>
-                    <input id="task-id" name="taskId" type="hidden" />
-                    <div class="field-group">
-                        <label for="task-title">Title</label>
-                        <input id="task-title" name="title" type="text" />
-                        <p id="title-error" class="field-error"></p>
-                    </div>
-                    <div class="field-group">
-                        <label for="task-description">Description</label>
-                        <textarea id="task-description" name="description"></textarea>
-                    </div>
-                    <div class="field-group">
-                        <label for="task-status">Status</label>
-                        <select id="task-status" name="status">
-                            <option value="ToDo">To Do</option>
-                            <option value="InProgress">In Progress</option>
-                            <option value="Done">Done</option>
-                        </select>
-                    </div>
-                    <div class="field-group">
-                        <label for="task-priority">Priority</label>
-                        <select id="task-priority" name="priority">
-                            <option value="Low">Low</option>
-                            <option value="Medium">Medium</option>
-                            <option value="High">High</option>
-                        </select>
-                    </div>
-                    <div class="field-group">
-                        <label for="task-assignee">Assignee</label>
-                        <input id="task-assignee" name="assignee" type="text" />
-                    </div>
-                    <div class="field-group">
-                        <label for="task-due-date">Due date</label>
-                        <input id="task-due-date" name="dueDate" type="date" />
-                        <p id="due-date-error" class="field-error"></p>
+                    <div class="modal-form-body">
+                        <div id="form-error" class="form-error" role="alert" hidden></div>
+                        <input id="task-id" name="taskId" type="hidden" />
+                        <div class="field-group">
+                            <label for="task-title">Title</label>
+                            <input id="task-title" name="title" type="text" />
+                            <p id="title-error" class="field-error"></p>
+                        </div>
+                        <div class="field-group">
+                            <label for="task-description">Description</label>
+                            <textarea id="task-description" name="description"></textarea>
+                        </div>
+                        <div class="field-group">
+                            <label for="task-status">Status</label>
+                            <select id="task-status" name="status">
+                                <option value="ToDo">To Do</option>
+                                <option value="InProgress">In Progress</option>
+                                <option value="Done">Done</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label for="task-priority">Priority</label>
+                            <select id="task-priority" name="priority">
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label for="task-assignee">Assignee</label>
+                            <input id="task-assignee" name="assignee" type="text" />
+                        </div>
+                        <div class="field-group">
+                            <label for="task-due-date">Due date</label>
+                            <input id="task-due-date" name="dueDate" type="date" />
+                            <p id="due-date-error" class="field-error"></p>
+                        </div>
+                        <div class="field-group">
+                            <label for="task-tags">Tags</label>
+                            <input id="task-tags" name="tags" type="text" placeholder="backend, FastAPI123" autocomplete="off" />
+                            <p class="field-hint">Comma-separated. Letters and numbers only (max 255 each).</p>
+                            <p id="tags-error" class="field-error"></p>
+                        </div>
                     </div>
                     <div class="modal-actions">
                         <button id="cancel-btn" class="btn btn-secondary" type="button">Cancel</button>
@@ -584,6 +709,7 @@
             let draggedTaskId = null;
             let boardMessage = "";
             let overdueOnlyFilter = false;
+            let tagFilter = "";
 
             function getTaskFormElements() {
                 return {
@@ -595,12 +721,46 @@
                     priorityInput: document.getElementById("task-priority"),
                     assigneeInput: document.getElementById("task-assignee"),
                     dueDateInput: document.getElementById("task-due-date"),
+                    tagsInput: document.getElementById("task-tags"),
                     taskIdInput: document.getElementById("task-id"),
                     titleError: document.getElementById("title-error"),
                     dueDateError: document.getElementById("due-date-error"),
+                    tagsError: document.getElementById("tags-error"),
                     formError: document.getElementById("form-error"),
                     modalTitle: document.getElementById("task-modal-title")
                 };
+            }
+
+            function parseTagsInput(value) {
+                return String(value || "")
+                    .split(",")
+                    .map((tag) => tag.trim())
+                    .filter((tag) => tag !== "");
+            }
+
+            function formatTagsInput(tags) {
+                return Array.isArray(tags) && tags.length ? tags.join(", ") : "";
+            }
+
+            function tagsAreEqual(left, right) {
+                const a = Array.isArray(left) ? left : [];
+                const b = Array.isArray(right) ? right : [];
+                if (a.length !== b.length) {
+                    return false;
+                }
+                return a.every((tag, index) => tag === b[index]);
+            }
+
+            function getTagsValidationError(tags) {
+                for (const tag of tags) {
+                    if (tag.length > 255) {
+                        return "Each tag must be 255 characters or fewer.";
+                    }
+                    if (!/^[A-Za-z0-9]+$/.test(tag)) {
+                        return "Tags may only contain letters and numbers (no spaces or symbols).";
+                    }
+                }
+                return "";
             }
 
             function getPriorityValue(priority) {
@@ -650,6 +810,12 @@
                             Due: ${task.due_date}${task.overdue ? '<span class="overdue-label">Overdue</span>' : ""}
                        </p>`
                     : "";
+                const tagsMarkup =
+                    Array.isArray(task.tags) && task.tags.length
+                        ? `<div class="task-tags">${task.tags
+                              .map((tag) => `<span class="tag-chip">${tag}</span>`)
+                              .join("")}</div>`
+                        : "";
                 return `
                     <article class="task-card" draggable="true" data-task-id="${task.id}">
                         <div class="task-meta">
@@ -659,6 +825,7 @@
                         <h3 class="task-title">${task.title}</h3>
                         ${task.description ? `<p class="task-description">${task.description}</p>` : ""}
                         ${dueDateMarkup}
+                        ${tagsMarkup}
                         <div class="task-meta">
                             <span>${task.assignee ? `Assignee: ${task.assignee}` : "Unassigned"}</span>
                             <span>#${task.id}</span>
@@ -872,10 +1039,21 @@
                 renderBoard();
             }
 
+            function buildTasksQuery() {
+                const params = new URLSearchParams();
+                if (overdueOnlyFilter) {
+                    params.set("overdue", "true");
+                }
+                if (tagFilter) {
+                    params.set("tag", tagFilter);
+                }
+                const query = params.toString();
+                return query ? `?${query}` : "";
+            }
+
             async function fetchTasks() {
                 try {
-                    const query = overdueOnlyFilter ? "?overdue=true" : "";
-                    const response = await fetch(`${API_Base}/tasks${query}`);
+                    const response = await fetch(`${API_Base}/tasks${buildTasksQuery()}`);
                     if (!response.ok) {
                         throw new Error("Unable to fetch tasks");
                     }
@@ -888,18 +1066,37 @@
                 }
             }
 
-            async function applyOverdueFilter(checked) {
-                overdueOnlyFilter = checked;
+            async function applyBoardFilters({ overdueChecked = overdueOnlyFilter, tagValue = tagFilter } = {}) {
+                overdueOnlyFilter = Boolean(overdueChecked);
+                tagFilter = String(tagValue || "").trim();
+                syncTagFilterClearButton();
                 boardState = "Loading";
                 renderBoardState();
                 await fetchTasks();
                 renderBoardState();
             }
 
+            function syncTagFilterClearButton() {
+                const clearButton = document.getElementById("tag-filter-clear");
+                if (!clearButton) {
+                    return;
+                }
+                clearButton.hidden = !tagFilter;
+            }
+
+            async function applyOverdueFilter(checked) {
+                await applyBoardFilters({ overdueChecked: checked, tagValue: tagFilter });
+            }
+
+            async function applyTagFilter(value) {
+                await applyBoardFilters({ overdueChecked: overdueOnlyFilter, tagValue: value });
+            }
+
             function clearTaskFormErrors() {
-                const { titleError, dueDateError, formError } = getTaskFormElements();
+                const { titleError, dueDateError, tagsError, formError } = getTaskFormElements();
                 titleError.textContent = "";
                 dueDateError.textContent = "";
+                tagsError.textContent = "";
                 formError.textContent = "";
                 formError.hidden = true;
             }
@@ -911,6 +1108,7 @@
                 elements.priorityInput.value = "Medium";
                 elements.assigneeInput.value = "";
                 elements.dueDateInput.value = "";
+                elements.tagsInput.value = "";
                 clearTaskFormErrors();
             }
 
@@ -927,6 +1125,7 @@
                     elements.priorityInput.value = task.priority || "Medium";
                     elements.assigneeInput.value = task.assignee || "";
                     elements.dueDateInput.value = task.due_date || "";
+                    elements.tagsInput.value = formatTagsInput(task.tags);
                 }
 
                 elements.modal.classList.remove("hidden");
@@ -949,6 +1148,7 @@
 
             function buildTaskPayload(elements, taskId) {
                 const dueDate = elements.dueDateInput.value.trim();
+                const tags = parseTagsInput(elements.tagsInput.value);
                 const payload = {
                     title: elements.titleInput.value.trim(),
                     description: elements.descriptionInput.value.trim() === "" ? "" : elements.descriptionInput.value,
@@ -959,10 +1159,17 @@
 
                 if (!taskId) {
                     payload.status = elements.statusInput.value;
+                    if (tags.length) {
+                        payload.tags = tags;
+                    }
                 } else {
                     const existingTask = tasks.find((item) => item.id === taskId);
                     if (!existingTask || existingTask.status !== elements.statusInput.value) {
                         payload.status = elements.statusInput.value;
+                    }
+                    const existingTags = existingTask?.tags || [];
+                    if (!tagsAreEqual(tags, existingTags)) {
+                        payload.tags = tags;
                     }
                 }
 
@@ -978,6 +1185,14 @@
                 if (!title) {
                     elements.titleError.textContent = "Title is required";
                     elements.titleInput.focus();
+                    return;
+                }
+
+                const tags = parseTagsInput(elements.tagsInput.value);
+                const tagsError = getTagsValidationError(tags);
+                if (tagsError) {
+                    elements.tagsError.textContent = tagsError;
+                    elements.tagsInput.focus();
                     return;
                 }
 
@@ -1041,6 +1256,37 @@
                     overdueFilterInput.checked = overdueOnlyFilter;
                     overdueFilterInput.addEventListener("change", (event) => {
                         applyOverdueFilter(event.target.checked);
+                    });
+                }
+
+                const tagFilterInput = document.getElementById("tag-filter");
+                const tagFilterClearButton = document.getElementById("tag-filter-clear");
+                if (tagFilterInput) {
+                    tagFilterInput.value = tagFilter;
+                    syncTagFilterClearButton();
+                    const commitTagFilter = () => {
+                        const nextValue = tagFilterInput.value.trim();
+                        if (nextValue === tagFilter) {
+                            tagFilterInput.value = tagFilter;
+                            syncTagFilterClearButton();
+                            return;
+                        }
+                        applyTagFilter(nextValue);
+                    };
+                    tagFilterInput.addEventListener("change", commitTagFilter);
+                    tagFilterInput.addEventListener("keydown", (event) => {
+                        if (event.key === "Enter") {
+                            event.preventDefault();
+                            commitTagFilter();
+                        }
+                    });
+                }
+                if (tagFilterClearButton) {
+                    tagFilterClearButton.addEventListener("click", () => {
+                        if (tagFilterInput) {
+                            tagFilterInput.value = "";
+                        }
+                        applyTagFilter("");
                     });
                 }
 

@@ -31,20 +31,25 @@ ID	Feature	Story	Acceptance Criteria	Notes / Assumptions
 US-TAG-01	Tags / Labels	As a team member, I want to add multiple tags to a task so that I can categorize and organize tasks more easily.	
 1. A team member can add one or more valid tags when creating a task.
 2. Added tags are displayed on the task card.
-3. A task can be created without tags and continues to work like existing tasks.	Tags are optional. No predefined tag list or tag management feature is required.
+3. A task can be created without tags and continues to work like existing tasks.	
+Tags are optional. No predefined tag list or tag management feature is required.
+
 US-TAG-02	Tags / Labels	As a team member, I want to update or remove task tags so that task categories remain accurate over time.	
 1. A team member can add new tags while editing an existing task.
 2. A team member can remove existing tags from a task.
-3. Updating tags does not change other task fields such as title, status, priority, or assignee.	Tags only apply to individual tasks. No global tag administration is included.
+3. Updating tags does not change other task fields such as title, status, priority, or assignee.	
+Tags only apply to individual tasks. No global tag administration is included.
 
 US-TAG-03	Tags / Labels	As a team member, I want tags to follow validation rules so that task labels remain consistent, clean, and easy to search.	
 1. A tag cannot be empty, contain only whitespace, or exceed 255 characters in length.
 2. A tag containing characters other than letters (A-Z, a-z) and numbers (0-9) is rejected with a clear validation message.
-3. Valid tags containing only letters and numbers, with a maximum length of 255 characters, are successfully saved and displayed on the task card.	Tags are stored with a maximum length of 255 characters (VARCHAR(255)). Tags support only alphanumeric characters (letters and numbers). Spaces, symbols, and special characters are not allowed. No advanced tag management or predefined tag list is introduced.
+3. Valid tags containing only letters and numbers, with a maximum length of 255 characters, are successfully saved and displayed on the task card.	
+Tags are stored with a maximum length of 255 characters (VARCHAR(255)). Tags support only alphanumeric characters (letters and numbers). Spaces, symbols, and special characters are not allowed. No advanced tag management or predefined tag list is introduced.
 
 US-TAG-04	Tags / Labels	As a team member, I want to filter tasks by tag so that I can quickly find related tasks.	
 1. Selecting a tag filter displays tasks containing that tag.
 2. Tasks without the selected tag are excluded from the filtered results.
-3. Clearing the tag filter restores the normal task list behavior.	Tag filtering should work with existing filters (status and priority) without changing current behavior.
+3. Clearing the tag filter restores the normal task list behavior.	
+Tag filtering should work with existing filters (status and priority) without changing current behavior.
 
 Notes: In US-TAG-03 AI didnt mention any validation rules for tags other than empty string so i told it to rewrite the story by adding validation rule so tag can have a maximum length of 255 characters and only accept letters and numbers.

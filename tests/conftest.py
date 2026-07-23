@@ -35,3 +35,19 @@ def created_task_with_due_date(client):
     )
     assert response.status_code == 201
     return response.json()
+
+
+@pytest.fixture
+def created_task_with_tags(client):
+    response = client.post(
+        "/tasks",
+        json={
+            "title": "task with tags",
+            "tags": [
+                "backend",
+                "FastAPI123",
+            ],
+        },
+    )
+    assert response.status_code == 201
+    return response.json()
