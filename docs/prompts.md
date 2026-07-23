@@ -2324,3 +2324,101 @@ Output only the modified frontend files.
 For each file, prefix with:
 
 # FILE: path/to/file
+##################################################################
+
+Create a behavior contract for my current Task Tracker application before refactoring.
+
+Context:
+- This is a FastAPI Task Tracker application with a simple web frontend.
+- The application currently includes:
+
+Existing features:
+- Create tasks.
+- View tasks in a list.
+- Update tasks.
+- Delete tasks.
+- Filter tasks by status and priority.
+
+Implemented enhancements:
+1. Due Dates + Overdue Filter
+2. Tags / Labels
+
+The purpose of this contract is to capture the behaviors that MUST remain unchanged during refactoring.
+
+============================================================
+BEHAVIORS THAT MUST BE COVERED
+============================================================
+
+Core Task Management:
+- Creating a valid task works successfully.
+- Creating a task with invalid title validation shows the correct validation error.
+- Updating an existing task keeps unchanged fields unchanged.
+- Deleting an existing task removes it correctly.
+- Existing tasks without new optional fields continue working.
+
+Due Dates:
+- Tasks can be created without a due date.
+- Tasks can be created with a valid due date.
+- Due date appears correctly when viewing tasks.
+- Due date can be updated.
+- Due date can be removed.
+- Past due dates are rejected during create/update.
+- Existing overdue tasks remain editable when updating unrelated fields.
+- Overdue status is calculated correctly:
+  - past date => overdue
+  - today => not overdue
+  - future date => not overdue
+  - no due date => not overdue.
+- Overdue filter returns the correct tasks.
+- Existing status and priority filters still work together with overdue filtering.
+
+Tags / Labels:
+- Tasks can be created without tags.
+- Tasks can be created with multiple valid tags.
+- Invalid tags are rejected:
+  - empty values
+  - whitespace values
+  - more than 255 characters
+  - special characters
+  - spaces.
+- Valid alphanumeric tags are accepted.
+- Tags appear correctly on task cards.
+- Tags can be updated.
+- Tags can be removed.
+- Tag filtering returns only matching tasks.
+- Tag filtering works together with existing filters.
+
+Frontend Behavior:
+- Task list loads correctly.
+- Loading state appears while data is loading.
+- Error state appears when backend is unavailable.
+- Create Task modal opens correctly.
+- Update Task modal opens correctly.
+- Forms remain usable on different screen sizes.
+- Save and Cancel buttons remain accessible.
+- Validation messages appear correctly.
+- Closing/dismissing modals works correctly.
+- Clearing filters restores expected behavior.
+- Clearing tag filter removes only the tag filter and keeps other filters.
+
+Backend/API Behavior:
+- Existing endpoints continue working.
+- Request/response contracts remain unchanged.
+- Validation errors return the expected responses.
+- Filtering parameters continue working.
+- No unexpected changes to existing behavior.
+
+============================================================
+OUTPUT FORMAT
+============================================================
+
+Return a table with columns:
+
+| ID | Behavior | How to check manually | Pass/Fail notes |
+
+Requirements:
+- Do not write code.
+- Do not suggest refactoring changes.
+- Do not modify implementation details.
+- Only describe observable behaviors.
+- Keep the contract concise and practical for manual regression testing.
