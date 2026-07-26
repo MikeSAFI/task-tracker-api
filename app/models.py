@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from enum import Enum
 from typing import Optional
 
@@ -26,6 +26,25 @@ def _validate_title(value: str) -> str:
     return stripped
 
 
+def _validate_tag(value: str) -> str:
+    if not value or not value.strip():
+        raise ValueError("Tag cannot be empty or contain only whitespace")
+    if len(value) > 255:
+        raise ValueError("Tag must be at most 255 characters")
+    if not all(
+        ("A" <= char <= "Z") or ("a" <= char <= "z") or ("0" <= char <= "9")
+        for char in value
+    ):
+        raise ValueError("Tag can contain only letters (A-Z, a-z) and numbers (0-9)")
+    return value
+
+
+def _validate_tags(value: Optional[list[str]]) -> Optional[list[str]]:
+    if value is None:
+        return value
+    return [_validate_tag(tag) for tag in value]
+
+
 class TaskCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -34,11 +53,18 @@ class TaskCreate(BaseModel):
     status: TaskStatus = TaskStatus.TODO
     priority: TaskPriority = TaskPriority.MEDIUM
     assignee: Optional[str] = None
+    due_date: Optional[date] = None
+    tags: Optional[list[str]] = None
 
     @field_validator("title")
     @classmethod
     def validate_title(cls, value: str) -> str:
         return _validate_title(value)
+
+    @field_validator("tags")
+    @classmethod
+    def validate_tags(cls, value: Optional[list[str]]) -> Optional[list[str]]:
+        return _validate_tags(value)
 
 
 class TaskUpdate(BaseModel):
@@ -49,6 +75,8 @@ class TaskUpdate(BaseModel):
     status: Optional[TaskStatus] = None
     priority: Optional[TaskPriority] = None
     assignee: Optional[str] = None
+    due_date: Optional[date] = None
+    tags: Optional[list[str]] = None
 
     @field_validator("title")
     @classmethod
@@ -56,6 +84,11 @@ class TaskUpdate(BaseModel):
         if value is None:
             return value
         return _validate_title(value)
+
+    @field_validator("tags")
+    @classmethod
+    def validate_tags(cls, value: Optional[list[str]]) -> Optional[list[str]]:
+        return _validate_tags(value)
 
 
 class TaskResponse(BaseModel):
@@ -67,5 +100,8 @@ class TaskResponse(BaseModel):
     status: TaskStatus
     priority: TaskPriority
     assignee: Optional[str]
+    due_date: Optional[date] = None
+    overdue: bool
+    tags: list[str] = []
     created_at: datetime
     updated_at: datetime

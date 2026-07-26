@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
 from app import storage
-from app.business_rules import validate_status_transition
+from app.business_rules import validate_due_date_not_in_past, validate_status_transition
 from app.models import TaskCreate, TaskPriority, TaskResponse, TaskStatus, TaskUpdate
 
 app = FastAPI(
@@ -51,8 +51,15 @@ def health_check() -> dict:
 def list_tasks(
     status: TaskStatus | None = None,
     priority: TaskPriority | None = None,
+    overdue: bool | None = None,
+    tag: str | None = None,
 ) -> list[TaskResponse]:
-    return storage.get_all_tasks(status=status, priority=priority)
+    return storage.get_all_tasks(
+        status=status,
+        priority=priority,
+        overdue=overdue,
+        tag=tag,
+    )
 
 
 @app.get("/tasks/{task_id}", response_model=TaskResponse, tags=["tasks"])
@@ -68,18 +75,28 @@ def get_task(task_id: str) -> TaskResponse:
 
 @app.post("/tasks", response_model=TaskResponse, status_code=status.HTTP_201_CREATED, tags=["tasks"])
 def create_task(payload: TaskCreate) -> TaskResponse:
+    validate_due_date_not_in_past(payload.due_date)
     return storage.add_task(payload)
 
 
 @app.patch("/tasks/{task_id}", response_model=TaskResponse, tags=["tasks"])
 def update_task(task_id: str, payload: TaskUpdate) -> TaskResponse:
+    due_date_in_request = "due_date" in payload.model_fields_set
+    needs_existing = due_date_in_request or payload.status is not None
+
+    existing = storage.get_task_by_id(task_id) if needs_existing else None
+    if needs_existing and existing is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Task with id {task_id} not found",
+        )
+
+    # Only validate when due_date is present and actually changing.
+    # Unchanged past due dates must not block other field updates.
+    if due_date_in_request and payload.due_date != existing.due_date:
+        validate_due_date_not_in_past(payload.due_date)
+
     if payload.status is not None:
-        existing = storage.get_task_by_id(task_id)
-        if existing is None:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Task with id {task_id} not found",
-            )
         validate_status_transition(existing.status, payload.status)
 
     updated = storage.update_task(task_id, payload)

@@ -4,20 +4,30 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Task Board</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
         <style>
             :root {
-                --bg: #eef4fb;
-                --surface: #ffffff;
-                --surface-soft: #f7f9fc;
-                --border: #d9e4ee;
-                --text: #17233d;
-                --muted: #6b7b94;
-                --high: #d5364c;
-                --medium: #d08738;
-                --low: #1f8f5f;
-                --accent: #3b82f6;
-                --shadow: 0 24px 80px rgba(15, 23, 42, 0.12);
-                --card-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+                --bg: #edf1ec;
+                --bg-deep: #e3e9e0;
+                --surface: #fbfcfa;
+                --surface-soft: #f3f6f1;
+                --border: #d3dcd0;
+                --text: #1a2420;
+                --muted: #5f6f66;
+                --high: #c0392b;
+                --medium: #b7791f;
+                --low: #2f7d57;
+                --accent: #0f766e;
+                --accent-soft: #d7efe9;
+                --accent-strong: #0b5f59;
+                --warn: #8a5a12;
+                --warn-bg: #f7ecd6;
+                --radius: 14px;
+                --radius-sm: 10px;
+                --shadow: 0 18px 40px rgba(26, 36, 32, 0.08);
+                --card-shadow: 0 10px 28px rgba(26, 36, 32, 0.06);
             }
 
             * {
@@ -27,54 +37,61 @@
             body {
                 margin: 0;
                 min-height: 100vh;
-                font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
-                background: radial-gradient(circle at top left, rgba(59,130,246,0.15), transparent 32%),
-                    radial-gradient(circle at bottom right, rgba(56,189,248,0.12), transparent 28%),
-                    var(--bg);
+                font-family: "Manrope", "Segoe UI", sans-serif;
+                background:
+                    radial-gradient(ellipse 70% 45% at 8% -10%, rgba(15, 118, 110, 0.16), transparent 55%),
+                    radial-gradient(ellipse 55% 40% at 96% 8%, rgba(183, 121, 31, 0.1), transparent 50%),
+                    linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
                 color: var(--text);
             }
 
             main {
-                padding: 28px 24px 32px;
+                padding: 8px 24px 40px;
                 max-width: 1320px;
                 margin: 0 auto;
             }
 
             .app-header {
-                padding: 32px 24px 24px;
+                padding: 28px 24px 18px;
+                max-width: 1320px;
+                margin: 0 auto;
             }
 
             .app-header-content {
                 display: flex;
                 justify-content: space-between;
-                align-items: flex-start;
+                align-items: flex-end;
                 gap: 18px;
                 flex-wrap: wrap;
+                margin-bottom: 18px;
             }
 
             .app-header h1 {
-                margin: 0 0 10px;
-                font-size: clamp(2rem, 2.4vw, 2.6rem);
-                letter-spacing: -0.04em;
+                margin: 0 0 8px;
+                font-family: "Syne", "Manrope", sans-serif;
+                font-size: clamp(2.1rem, 3vw, 2.75rem);
+                font-weight: 800;
+                letter-spacing: -0.045em;
+                line-height: 1.05;
             }
 
             .app-header p {
                 margin: 0;
-                max-width: 45rem;
+                max-width: 36rem;
                 color: var(--muted);
-                line-height: 1.65;
-                font-size: 1rem;
+                line-height: 1.55;
+                font-size: 0.98rem;
             }
 
             .btn {
                 border: none;
-                border-radius: 999px;
-                padding: 12px 20px;
-                font-size: 0.95rem;
+                border-radius: var(--radius-sm);
+                padding: 12px 18px;
+                font: inherit;
+                font-size: 0.92rem;
                 font-weight: 700;
                 cursor: pointer;
-                transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
-                box-shadow: 0 10px 30px rgba(59, 130, 246, 0.14);
+                transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
             }
 
             .btn:hover {
@@ -86,26 +103,207 @@
                 color: #fff;
             }
 
+            .btn-primary:hover {
+                background: var(--accent-strong);
+            }
+
             .btn-secondary {
-                background: #ffffffee;
+                background: var(--surface);
                 color: var(--text);
-                box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+                border: 1px solid var(--border);
+            }
+
+            .filter-bar {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                flex-wrap: wrap;
+                padding: 10px;
+                background: rgba(251, 252, 250, 0.82);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                backdrop-filter: blur(10px);
+                box-shadow: var(--card-shadow);
+                animation: filter-in 420ms ease both;
+            }
+
+            .filter-bar-label {
+                margin: 0 4px 0 8px;
+                font-size: 0.72rem;
+                font-weight: 800;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                color: var(--muted);
+            }
+
+            .tag-filter {
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                flex: 1 1 240px;
+                min-width: 220px;
+                padding: 8px 10px 8px 12px;
+                border-radius: var(--radius-sm);
+                background: var(--surface-soft);
+                border: 1px solid transparent;
+                color: var(--text);
+                transition: border-color 160ms ease, background-color 160ms ease;
+            }
+
+            .tag-filter:focus-within {
+                border-color: rgba(15, 118, 110, 0.45);
+                background: var(--surface);
+            }
+
+            .tag-filter-icon {
+                display: inline-flex;
+                color: var(--muted);
+                flex-shrink: 0;
+            }
+
+            .tag-filter label {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                white-space: nowrap;
+                border: 0;
+            }
+
+            .tag-filter input {
+                border: none;
+                background: transparent;
+                font: inherit;
+                font-weight: 600;
+                color: var(--text);
+                width: 100%;
+                min-width: 0;
+                outline: none;
+            }
+
+            .tag-filter input::placeholder {
+                color: var(--muted);
+                font-weight: 600;
+            }
+
+            .tag-filter input[type="search"]::-webkit-search-decoration,
+            .tag-filter input[type="search"]::-webkit-search-cancel-button {
+                -webkit-appearance: none;
+                appearance: none;
+            }
+
+            .tag-filter-clear {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 28px;
+                height: 28px;
+                border: none;
+                border-radius: 8px;
+                background: transparent;
+                color: var(--muted);
+                padding: 0;
+                font: inherit;
+                font-size: 1.1rem;
+                font-weight: 700;
+                line-height: 1;
+                cursor: pointer;
+                flex-shrink: 0;
+            }
+
+            .tag-filter-clear:hover {
+                background: rgba(26, 36, 32, 0.06);
+                color: var(--text);
+            }
+
+            .tag-filter-clear[hidden] {
+                display: none;
+            }
+
+            .overdue-filter {
+                display: inline-flex;
+                align-items: center;
+                gap: 12px;
+                padding: 8px 12px;
+                border-radius: var(--radius-sm);
+                background: var(--surface-soft);
+                border: 1px solid transparent;
+                color: var(--text);
+                font-size: 0.9rem;
+                font-weight: 700;
+                cursor: pointer;
+                user-select: none;
+                transition: border-color 160ms ease, background-color 160ms ease;
+            }
+
+            .overdue-filter:has(input:checked) {
+                background: rgba(192, 57, 43, 0.08);
+                border-color: rgba(192, 57, 43, 0.22);
+                color: var(--high);
+            }
+
+            .overdue-filter input {
+                position: absolute;
+                opacity: 0;
+                width: 1px;
+                height: 1px;
+                margin: 0;
+                pointer-events: none;
+            }
+
+            .toggle-track {
+                position: relative;
+                width: 40px;
+                height: 24px;
+                border-radius: 999px;
+                background: #c9d3cb;
+                flex-shrink: 0;
+                transition: background-color 180ms ease;
+            }
+
+            .toggle-track::after {
+                content: "";
+                position: absolute;
+                top: 3px;
+                left: 3px;
+                width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                background: #fff;
+                box-shadow: 0 1px 3px rgba(26, 36, 32, 0.2);
+                transition: transform 180ms ease;
+            }
+
+            .overdue-filter input:checked + .toggle-track {
+                background: var(--high);
+            }
+
+            .overdue-filter input:checked + .toggle-track::after {
+                transform: translateX(16px);
+            }
+
+            .overdue-filter input:focus-visible + .toggle-track {
+                outline: 2px solid var(--accent);
+                outline-offset: 2px;
             }
 
             .board {
                 display: grid;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: 24px;
+                gap: 20px;
                 align-items: start;
             }
 
             .board-column {
-                background: var(--surface-soft);
+                background: rgba(243, 246, 241, 0.88);
                 border: 1px solid var(--border);
-                border-radius: 24px;
-                padding: 20px;
+                border-radius: calc(var(--radius) + 4px);
+                padding: 16px;
                 min-height: 280px;
-                box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75);
+                transition: background-color 180ms ease, border-color 180ms ease;
             }
 
             .column-header {
@@ -113,64 +311,67 @@
                 justify-content: space-between;
                 align-items: center;
                 gap: 12px;
-                margin-bottom: 18px;
+                margin-bottom: 14px;
+                padding: 0 4px;
             }
 
             .column-title {
                 margin: 0;
-                font-size: 0.95rem;
-                font-weight: 700;
+                font-size: 0.78rem;
+                font-weight: 800;
                 text-transform: uppercase;
-                letter-spacing: 0.16em;
-                color: var(--text);
+                letter-spacing: 0.14em;
+                color: var(--muted);
             }
 
             .column-count {
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                min-width: 32px;
-                height: 32px;
-                padding: 0 10px;
-                border-radius: 999px;
-                background: #ffffff;
-                border: 1px solid rgba(38, 68, 120, 0.08);
+                min-width: 28px;
+                height: 28px;
+                padding: 0 8px;
+                border-radius: 8px;
+                background: var(--surface);
+                border: 1px solid var(--border);
                 color: var(--text);
-                font-size: 0.8rem;
-                font-weight: 700;
-                letter-spacing: 0.02em;
+                font-size: 0.78rem;
+                font-weight: 800;
             }
 
             .task-card {
                 background: var(--surface);
-                border: 1px solid rgba(31, 41, 55, 0.08);
-                border-radius: 18px;
-                padding: 18px;
-                margin-bottom: 16px;
+                border: 1px solid rgba(26, 36, 32, 0.08);
+                border-radius: var(--radius);
+                padding: 16px;
+                margin-bottom: 12px;
                 box-shadow: var(--card-shadow);
                 display: flex;
                 flex-direction: column;
-                gap: 14px;
-                transition: transform 180ms ease, box-shadow 180ms ease;
+                gap: 12px;
+                transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+                animation: card-in 320ms ease both;
             }
 
             .task-card:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+                border-color: rgba(15, 118, 110, 0.28);
+                box-shadow: var(--shadow);
             }
 
             .task-title {
                 margin: 0;
-                font-size: 1.05rem;
-                font-weight: 700;
+                font-size: 1.02rem;
+                font-weight: 800;
                 color: var(--text);
+                letter-spacing: -0.02em;
             }
 
             .task-description {
                 margin: 0;
                 color: var(--muted);
-                font-size: 0.95rem;
-                line-height: 1.65;
+                font-size: 0.92rem;
+                line-height: 1.6;
             }
 
             .task-meta {
@@ -178,7 +379,7 @@
                 justify-content: space-between;
                 align-items: center;
                 gap: 10px;
-                font-size: 0.9rem;
+                font-size: 0.88rem;
                 color: var(--muted);
                 flex-wrap: wrap;
             }
@@ -186,59 +387,108 @@
             .priority-pill {
                 display: inline-flex;
                 align-items: center;
-                padding: 6px 10px;
-                border-radius: 999px;
-                font-size: 0.75rem;
-                font-weight: 700;
+                padding: 4px 9px;
+                border-radius: 8px;
+                font-size: 0.7rem;
+                font-weight: 800;
                 text-transform: uppercase;
-                letter-spacing: 0.08em;
+                letter-spacing: 0.06em;
             }
 
             .priority-pill.high {
-                background: rgba(213, 54, 76, 0.12);
+                background: rgba(192, 57, 43, 0.12);
                 color: var(--high);
             }
 
             .priority-pill.medium {
-                background: rgba(208, 135, 56, 0.14);
+                background: rgba(183, 121, 31, 0.14);
                 color: var(--medium);
             }
 
             .priority-pill.low {
-                background: rgba(31, 143, 95, 0.12);
+                background: rgba(47, 125, 87, 0.12);
                 color: var(--low);
             }
 
-            .edit-btn {
-                border: 1px solid rgba(59, 130, 246, 0.16);
-                background: #f7fbff;
-                color: var(--accent);
-                border-radius: 999px;
-                padding: 8px 12px;
+            .task-due-date {
+                font-size: 0.88rem;
+                color: var(--muted);
+            }
+
+            .task-due-date.overdue {
+                color: var(--high);
+                font-weight: 700;
+            }
+
+            .overdue-label {
+                display: inline-flex;
+                align-items: center;
+                margin-left: 8px;
+                padding: 3px 7px;
+                border-radius: 7px;
+                background: rgba(192, 57, 43, 0.12);
+                color: var(--high);
+                font-size: 0.68rem;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+
+            .task-tags {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+
+            .tag-chip {
+                display: inline-flex;
+                align-items: center;
+                padding: 3px 8px;
+                border-radius: 7px;
+                background: var(--accent-soft);
+                color: var(--accent-strong);
+                font-size: 0.72rem;
+                font-weight: 700;
+            }
+
+            .field-hint {
+                margin: 0;
                 font-size: 0.85rem;
+                color: var(--muted);
+                line-height: 1.4;
+            }
+
+            .edit-btn {
+                border: 1px solid var(--border);
+                background: var(--surface-soft);
+                color: var(--accent-strong);
+                border-radius: 8px;
+                padding: 7px 11px;
+                font: inherit;
+                font-size: 0.82rem;
                 font-weight: 700;
                 cursor: pointer;
-                transition: background-color 160ms ease, transform 160ms ease;
+                transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
             }
 
             .edit-btn:hover {
-                background: #e5f0ff;
+                background: var(--accent-soft);
+                border-color: rgba(15, 118, 110, 0.28);
                 transform: translateY(-1px);
             }
 
             .loading-skeleton {
-                background: linear-gradient(180deg, #ffffff 0%, #f6f8fb 100%);
-                border: 1px solid rgba(145, 163, 206, 0.18);
-                border-radius: 16px;
-                padding: 18px;
-                margin-bottom: 16px;
-                box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
+                background: linear-gradient(180deg, var(--surface) 0%, var(--surface-soft) 100%);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 16px;
+                margin-bottom: 12px;
             }
 
             .loading-skeleton .line {
-                height: 12px;
-                border-radius: 999px;
-                background: linear-gradient(90deg, #e2e8f0 25%, #f8fafc 50%, #e2e8f0 75%);
+                height: 11px;
+                border-radius: 8px;
+                background: linear-gradient(90deg, #d9e1d7 25%, #f4f7f2 50%, #d9e1d7 75%);
                 background-size: 200% 100%;
                 animation: shimmer 1.4s infinite;
             }
@@ -252,19 +502,19 @@
             }
 
             .empty-column {
-                border: 2px dashed rgba(59, 130, 246, 0.25);
-                border-radius: 18px;
-                padding: 28px 20px;
+                border: 1.5px dashed rgba(15, 118, 110, 0.35);
+                border-radius: var(--radius);
+                padding: 28px 18px;
                 text-align: center;
                 color: var(--accent);
-                background: rgba(59, 130, 246, 0.06);
-                font-size: 0.98rem;
+                background: rgba(215, 239, 233, 0.45);
+                font-size: 0.95rem;
+                font-weight: 600;
             }
 
             .board-column.drag-over {
-                border-color: rgba(59, 130, 246, 0.55);
-                box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.14);
-                background: #eef7ff;
+                border-color: rgba(15, 118, 110, 0.55);
+                background: #e7f4f0;
             }
 
             .task-card.dragging {
@@ -274,33 +524,33 @@
 
             .board-message {
                 grid-column: 1 / -1;
-                background: #fef3c7;
-                border: 1px solid #fde68a;
-                color: #92400e;
-                border-radius: 16px;
-                padding: 16px 18px;
-                margin-bottom: 18px;
-                font-weight: 600;
+                background: var(--warn-bg);
+                border: 1px solid #e6d3a8;
+                color: var(--warn);
+                border-radius: var(--radius);
+                padding: 14px 16px;
+                margin-bottom: 14px;
+                font-weight: 700;
             }
 
             .error-card {
-                background: #fff1f2;
-                border: 1px solid #fecaca;
-                color: #9b1c1c;
-                border-radius: 18px;
+                background: #fdf0ee;
+                border: 1px solid #f0c4bd;
+                color: #8f2a20;
+                border-radius: var(--radius);
                 padding: 18px;
-                box-shadow: 0 24px 48px rgba(220, 38, 38, 0.08);
             }
 
             .modal-overlay {
                 position: fixed;
                 inset: 0;
-                background: rgba(15, 23, 42, 0.62);
+                background: rgba(18, 28, 24, 0.58);
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 padding: 20px;
                 z-index: 1000;
+                overflow: hidden;
             }
 
             .modal-overlay.hidden {
@@ -309,24 +559,32 @@
 
             .modal-card {
                 width: min(100%, 560px);
+                max-height: calc(100vh - 40px);
+                max-height: calc(100dvh - 40px);
+                display: flex;
+                flex-direction: column;
                 background: var(--surface);
-                border-radius: 24px;
-                box-shadow: 0 30px 80px rgba(15, 23, 42, 0.18);
+                border-radius: calc(var(--radius) + 6px);
+                border: 1px solid var(--border);
+                box-shadow: var(--shadow);
                 overflow: hidden;
+                animation: modal-in 220ms ease both;
             }
 
             .modal-header {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding: 22px 24px;
-                border-bottom: 1px solid rgba(219, 226, 238, 0.8);
+                padding: 20px 22px;
+                border-bottom: 1px solid var(--border);
+                flex-shrink: 0;
             }
 
             .modal-header h2 {
                 margin: 0;
+                font-family: "Syne", "Manrope", sans-serif;
                 font-size: 1.25rem;
-                letter-spacing: -0.02em;
+                letter-spacing: -0.03em;
             }
 
             .modal-close {
@@ -336,13 +594,33 @@
                 font-size: 1.5rem;
                 cursor: pointer;
                 line-height: 1;
+                border-radius: 8px;
+                width: 36px;
+                height: 36px;
+            }
+
+            .modal-close:hover {
+                background: var(--surface-soft);
+                color: var(--text);
             }
 
             .modal-form {
-                padding: 24px;
                 display: flex;
                 flex-direction: column;
-                gap: 18px;
+                flex: 1;
+                min-height: 0;
+                overflow: hidden;
+            }
+
+            .modal-form-body {
+                padding: 22px 22px 8px;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+                overflow-y: auto;
+                flex: 1;
+                min-height: 0;
+                -webkit-overflow-scrolling: touch;
             }
 
             .field-group {
@@ -352,7 +630,7 @@
             }
 
             .field-group label {
-                font-size: 0.95rem;
+                font-size: 0.9rem;
                 font-weight: 700;
                 color: var(--text);
             }
@@ -360,21 +638,22 @@
             .field-group input,
             .field-group select,
             .field-group textarea {
-                border: 1px solid rgba(145, 163, 206, 0.35);
-                border-radius: 16px;
-                padding: 14px 16px;
+                border: 1px solid var(--border);
+                border-radius: var(--radius-sm);
+                padding: 12px 14px;
                 font: inherit;
                 color: var(--text);
-                background: #f8fbff;
-                transition: border-color 160ms ease, box-shadow 160ms ease;
+                background: var(--surface-soft);
+                transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
             }
 
             .field-group input:focus,
             .field-group select:focus,
             .field-group textarea:focus {
                 outline: none;
-                border-color: rgba(59, 130, 246, 0.55);
-                box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+                border-color: rgba(15, 118, 110, 0.55);
+                background: var(--surface);
+                box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
             }
 
             .field-group textarea {
@@ -389,18 +668,21 @@
             }
 
             .form-error {
-                border: 1px solid #fecaca;
-                background: #fef2f2;
-                border-radius: 16px;
-                padding: 14px 16px;
+                border: 1px solid #f0c4bd;
+                background: #fdf0ee;
+                border-radius: var(--radius-sm);
+                padding: 12px 14px;
             }
 
             .modal-actions {
                 display: flex;
                 justify-content: flex-end;
-                gap: 12px;
-                margin-top: 6px;
+                gap: 10px;
                 flex-wrap: wrap;
+                flex-shrink: 0;
+                padding: 14px 22px 22px;
+                border-top: 1px solid var(--border);
+                background: var(--surface);
             }
 
             @keyframes shimmer {
@@ -412,13 +694,46 @@
                 }
             }
 
+            @keyframes filter-in {
+                from {
+                    opacity: 0;
+                    transform: translateY(8px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @keyframes card-in {
+                from {
+                    opacity: 0;
+                    transform: translateY(6px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @keyframes modal-in {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px) scale(0.98);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+            }
+
             @media (max-width: 768px) {
                 main {
-                    padding: 18px 16px 24px;
+                    padding: 8px 16px 28px;
                 }
 
                 .app-header {
-                    padding: 24px 16px 12px;
+                    padding: 22px 16px 10px;
                 }
 
                 .board {
@@ -429,9 +744,35 @@
                     align-items: stretch;
                 }
 
+                .filter-bar {
+                    align-items: stretch;
+                }
+
+                .filter-bar-label {
+                    width: 100%;
+                    margin: 2px 0 0;
+                }
+
+                .tag-filter,
+                .overdue-filter {
+                    width: 100%;
+                    flex: 1 1 auto;
+                    min-width: 0;
+                }
+
                 .btn {
                     width: 100%;
                     justify-content: center;
+                }
+
+                .modal-overlay {
+                    padding: 12px;
+                    align-items: flex-start;
+                }
+
+                .modal-card {
+                    max-height: calc(100vh - 24px);
+                    max-height: calc(100dvh - 24px);
                 }
             }
         </style>
@@ -445,6 +786,24 @@
                 </div>
                 <button id="new-task-btn" class="btn btn-primary" type="button">New Task</button>
             </div>
+            <div class="filter-bar" role="search" aria-label="Task filters">
+                <p class="filter-bar-label">Filters</p>
+                <div class="tag-filter">
+                    <span class="tag-filter-icon" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M7.25 12.5a5.25 5.25 0 1 1 0-10.5 5.25 5.25 0 0 1 0 10.5Zm5.98.74 1.53 1.53" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                    <label for="tag-filter">Filter by tag</label>
+                    <input id="tag-filter" type="search" placeholder="Filter by tag…" autocomplete="off" />
+                    <button id="tag-filter-clear" class="tag-filter-clear" type="button" aria-label="Clear tag filter" hidden>×</button>
+                </div>
+                <label class="overdue-filter" for="overdue-filter">
+                    <input id="overdue-filter" type="checkbox" />
+                    <span class="toggle-track" aria-hidden="true"></span>
+                    Overdue only
+                </label>
+            </div>
         </header>
         <main>
             <section id="board" class="board" aria-live="polite">
@@ -457,36 +816,49 @@
                     <button id="modal-close-btn" class="modal-close" type="button" aria-label="Close">×</button>
                 </div>
                 <form id="task-form" class="modal-form">
-                    <div id="form-error" class="form-error" role="alert" hidden></div>
-                    <input id="task-id" name="taskId" type="hidden" />
-                    <div class="field-group">
-                        <label for="task-title">Title</label>
-                        <input id="task-title" name="title" type="text" />
-                        <p id="title-error" class="field-error"></p>
-                    </div>
-                    <div class="field-group">
-                        <label for="task-description">Description</label>
-                        <textarea id="task-description" name="description"></textarea>
-                    </div>
-                    <div class="field-group">
-                        <label for="task-status">Status</label>
-                        <select id="task-status" name="status">
-                            <option value="ToDo">To Do</option>
-                            <option value="InProgress">In Progress</option>
-                            <option value="Done">Done</option>
-                        </select>
-                    </div>
-                    <div class="field-group">
-                        <label for="task-priority">Priority</label>
-                        <select id="task-priority" name="priority">
-                            <option value="Low">Low</option>
-                            <option value="Medium">Medium</option>
-                            <option value="High">High</option>
-                        </select>
-                    </div>
-                    <div class="field-group">
-                        <label for="task-assignee">Assignee</label>
-                        <input id="task-assignee" name="assignee" type="text" />
+                    <div class="modal-form-body">
+                        <div id="form-error" class="form-error" role="alert" hidden></div>
+                        <input id="task-id" name="taskId" type="hidden" />
+                        <div class="field-group">
+                            <label for="task-title">Title</label>
+                            <input id="task-title" name="title" type="text" />
+                            <p id="title-error" class="field-error"></p>
+                        </div>
+                        <div class="field-group">
+                            <label for="task-description">Description</label>
+                            <textarea id="task-description" name="description"></textarea>
+                        </div>
+                        <div class="field-group">
+                            <label for="task-status">Status</label>
+                            <select id="task-status" name="status">
+                                <option value="ToDo">To Do</option>
+                                <option value="InProgress">In Progress</option>
+                                <option value="Done">Done</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label for="task-priority">Priority</label>
+                            <select id="task-priority" name="priority">
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label for="task-assignee">Assignee</label>
+                            <input id="task-assignee" name="assignee" type="text" />
+                        </div>
+                        <div class="field-group">
+                            <label for="task-due-date">Due date</label>
+                            <input id="task-due-date" name="dueDate" type="date" />
+                            <p id="due-date-error" class="field-error"></p>
+                        </div>
+                        <div class="field-group">
+                            <label for="task-tags">Tags</label>
+                            <input id="task-tags" name="tags" type="text" placeholder="backend, FastAPI123" autocomplete="off" />
+                            <p class="field-hint">Comma-separated. Letters and numbers only (max 255 each).</p>
+                            <p id="tags-error" class="field-error"></p>
+                        </div>
                     </div>
                     <div class="modal-actions">
                         <button id="cancel-btn" class="btn btn-secondary" type="button">Cancel</button>
@@ -508,6 +880,8 @@
             let boardState = "Loading";
             let draggedTaskId = null;
             let boardMessage = "";
+            let overdueOnlyFilter = false;
+            let tagFilter = "";
 
             function getTaskFormElements() {
                 return {
@@ -518,11 +892,47 @@
                     statusInput: document.getElementById("task-status"),
                     priorityInput: document.getElementById("task-priority"),
                     assigneeInput: document.getElementById("task-assignee"),
+                    dueDateInput: document.getElementById("task-due-date"),
+                    tagsInput: document.getElementById("task-tags"),
                     taskIdInput: document.getElementById("task-id"),
                     titleError: document.getElementById("title-error"),
+                    dueDateError: document.getElementById("due-date-error"),
+                    tagsError: document.getElementById("tags-error"),
                     formError: document.getElementById("form-error"),
                     modalTitle: document.getElementById("task-modal-title")
                 };
+            }
+
+            function parseTagsInput(value) {
+                return String(value || "")
+                    .split(",")
+                    .map((tag) => tag.trim())
+                    .filter((tag) => tag !== "");
+            }
+
+            function formatTagsInput(tags) {
+                return Array.isArray(tags) && tags.length ? tags.join(", ") : "";
+            }
+
+            function tagsAreEqual(left, right) {
+                const a = Array.isArray(left) ? left : [];
+                const b = Array.isArray(right) ? right : [];
+                if (a.length !== b.length) {
+                    return false;
+                }
+                return a.every((tag, index) => tag === b[index]);
+            }
+
+            function getTagsValidationError(tags) {
+                for (const tag of tags) {
+                    if (tag.length > 255) {
+                        return "Each tag must be 255 characters or fewer.";
+                    }
+                    if (!/^[A-Za-z0-9]+$/.test(tag)) {
+                        return "Tags may only contain letters and numbers (no spaces or symbols).";
+                    }
+                }
+                return "";
             }
 
             function getPriorityValue(priority) {
@@ -567,6 +977,17 @@
 
             function renderTaskCard(task) {
                 const priorityClass = (task.priority || "Medium").toLowerCase();
+                const dueDateMarkup = task.due_date
+                    ? `<p class="task-due-date${task.overdue ? " overdue" : ""}">
+                            Due: ${task.due_date}${task.overdue ? '<span class="overdue-label">Overdue</span>' : ""}
+                       </p>`
+                    : "";
+                const tagsMarkup =
+                    Array.isArray(task.tags) && task.tags.length
+                        ? `<div class="task-tags">${task.tags
+                              .map((tag) => `<span class="tag-chip">${tag}</span>`)
+                              .join("")}</div>`
+                        : "";
                 return `
                     <article class="task-card" draggable="true" data-task-id="${task.id}">
                         <div class="task-meta">
@@ -575,6 +996,8 @@
                         </div>
                         <h3 class="task-title">${task.title}</h3>
                         ${task.description ? `<p class="task-description">${task.description}</p>` : ""}
+                        ${dueDateMarkup}
+                        ${tagsMarkup}
                         <div class="task-meta">
                             <span>${task.assignee ? `Assignee: ${task.assignee}` : "Unassigned"}</span>
                             <span>#${task.id}</span>
@@ -788,9 +1211,21 @@
                 renderBoard();
             }
 
+            function buildTasksQuery() {
+                const params = new URLSearchParams();
+                if (overdueOnlyFilter) {
+                    params.set("overdue", "true");
+                }
+                if (tagFilter) {
+                    params.set("tag", tagFilter);
+                }
+                const query = params.toString();
+                return query ? `?${query}` : "";
+            }
+
             async function fetchTasks() {
                 try {
-                    const response = await fetch(`${API_Base}/tasks`);
+                    const response = await fetch(`${API_Base}/tasks${buildTasksQuery()}`);
                     if (!response.ok) {
                         throw new Error("Unable to fetch tasks");
                     }
@@ -803,9 +1238,37 @@
                 }
             }
 
+            async function applyBoardFilters({ overdueChecked = overdueOnlyFilter, tagValue = tagFilter } = {}) {
+                overdueOnlyFilter = Boolean(overdueChecked);
+                tagFilter = String(tagValue || "").trim();
+                syncTagFilterClearButton();
+                boardState = "Loading";
+                renderBoardState();
+                await fetchTasks();
+                renderBoardState();
+            }
+
+            function syncTagFilterClearButton() {
+                const clearButton = document.getElementById("tag-filter-clear");
+                if (!clearButton) {
+                    return;
+                }
+                clearButton.hidden = !tagFilter;
+            }
+
+            async function applyOverdueFilter(checked) {
+                await applyBoardFilters({ overdueChecked: checked, tagValue: tagFilter });
+            }
+
+            async function applyTagFilter(value) {
+                await applyBoardFilters({ overdueChecked: overdueOnlyFilter, tagValue: value });
+            }
+
             function clearTaskFormErrors() {
-                const { titleError, formError } = getTaskFormElements();
+                const { titleError, dueDateError, tagsError, formError } = getTaskFormElements();
                 titleError.textContent = "";
+                dueDateError.textContent = "";
+                tagsError.textContent = "";
                 formError.textContent = "";
                 formError.hidden = true;
             }
@@ -816,6 +1279,8 @@
                 elements.statusInput.value = "ToDo";
                 elements.priorityInput.value = "Medium";
                 elements.assigneeInput.value = "";
+                elements.dueDateInput.value = "";
+                elements.tagsInput.value = "";
                 clearTaskFormErrors();
             }
 
@@ -831,6 +1296,8 @@
                     elements.statusInput.value = task.status || "ToDo";
                     elements.priorityInput.value = task.priority || "Medium";
                     elements.assigneeInput.value = task.assignee || "";
+                    elements.dueDateInput.value = task.due_date || "";
+                    elements.tagsInput.value = formatTagsInput(task.tags);
                 }
 
                 elements.modal.classList.remove("hidden");
@@ -851,20 +1318,55 @@
                 formError.hidden = false;
             }
 
+            function showSubmitError(message) {
+                const elements = getTaskFormElements();
+                const normalized = String(message || "").toLowerCase();
+
+                if (normalized.includes("due date")) {
+                    elements.dueDateError.textContent = message;
+                    elements.dueDateInput.focus();
+                    return;
+                }
+
+                if (normalized.includes("tag")) {
+                    elements.tagsError.textContent = message;
+                    elements.tagsInput.focus();
+                    return;
+                }
+
+                if (normalized.includes("title")) {
+                    elements.titleError.textContent = message;
+                    elements.titleInput.focus();
+                    return;
+                }
+
+                showTaskFormError(message);
+            }
+
             function buildTaskPayload(elements, taskId) {
+                const dueDate = elements.dueDateInput.value.trim();
+                const tags = parseTagsInput(elements.tagsInput.value);
                 const payload = {
                     title: elements.titleInput.value.trim(),
                     description: elements.descriptionInput.value.trim() === "" ? "" : elements.descriptionInput.value,
                     priority: elements.priorityInput.value,
-                    assignee: elements.assigneeInput.value.trim() === "" ? null : elements.assigneeInput.value.trim()
+                    assignee: elements.assigneeInput.value.trim() === "" ? null : elements.assigneeInput.value.trim(),
+                    due_date: dueDate === "" ? null : dueDate
                 };
 
                 if (!taskId) {
                     payload.status = elements.statusInput.value;
+                    if (tags.length) {
+                        payload.tags = tags;
+                    }
                 } else {
                     const existingTask = tasks.find((item) => item.id === taskId);
                     if (!existingTask || existingTask.status !== elements.statusInput.value) {
                         payload.status = elements.statusInput.value;
+                    }
+                    const existingTags = existingTask?.tags || [];
+                    if (!tagsAreEqual(tags, existingTags)) {
+                        payload.tags = tags;
                     }
                 }
 
@@ -880,6 +1382,14 @@
                 if (!title) {
                     elements.titleError.textContent = "Title is required";
                     elements.titleInput.focus();
+                    return;
+                }
+
+                const tags = parseTagsInput(elements.tagsInput.value);
+                const tagsError = getTagsValidationError(tags);
+                if (tagsError) {
+                    elements.tagsError.textContent = tagsError;
+                    elements.tagsInput.focus();
                     return;
                 }
 
@@ -905,7 +1415,7 @@
                         return;
                     }
 
-                    showTaskFormError(getErrorMessage(responseBody));
+                    showSubmitError(getErrorMessage(responseBody));
                 } catch (error) {
                     showTaskFormError("Unable to reach the server. Please try again.");
                     console.error(error);
@@ -936,6 +1446,51 @@
                 const newTaskButton = document.getElementById("new-task-btn");
                 if (newTaskButton) {
                     newTaskButton.addEventListener("click", () => openTaskModal("create"));
+                }
+
+                const overdueFilterInput = document.getElementById("overdue-filter");
+                if (overdueFilterInput) {
+                    overdueFilterInput.checked = overdueOnlyFilter;
+                    overdueFilterInput.addEventListener("change", (event) => {
+                        applyOverdueFilter(event.target.checked);
+                    });
+                }
+
+                const tagFilterInput = document.getElementById("tag-filter");
+                const tagFilterClearButton = document.getElementById("tag-filter-clear");
+                if (tagFilterInput) {
+                    tagFilterInput.value = tagFilter;
+                    syncTagFilterClearButton();
+                    const commitTagFilter = () => {
+                        const nextValue = tagFilterInput.value.trim();
+                        if (nextValue === tagFilter) {
+                            tagFilterInput.value = tagFilter;
+                            syncTagFilterClearButton();
+                            return;
+                        }
+                        applyTagFilter(nextValue);
+                    };
+                    tagFilterInput.addEventListener("input", () => {
+                        const clearButton = document.getElementById("tag-filter-clear");
+                        if (clearButton) {
+                            clearButton.hidden = !tagFilterInput.value.trim();
+                        }
+                    });
+                    tagFilterInput.addEventListener("change", commitTagFilter);
+                    tagFilterInput.addEventListener("keydown", (event) => {
+                        if (event.key === "Enter") {
+                            event.preventDefault();
+                            commitTagFilter();
+                        }
+                    });
+                }
+                if (tagFilterClearButton) {
+                    tagFilterClearButton.addEventListener("click", () => {
+                        if (tagFilterInput) {
+                            tagFilterInput.value = "";
+                        }
+                        applyTagFilter("");
+                    });
                 }
 
                 const modal = document.getElementById("task-modal");
