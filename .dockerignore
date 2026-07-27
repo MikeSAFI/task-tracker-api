@@ -1,0 +1,47 @@
+# Git / VCS
+.git
+.gitignore
+.github
+
+# Env / secrets
+.env
+.env.example
+
+# Virtual environments
+venv/
+.venv/
+.venv-test/
+env/
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Test / coverage artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node (if ever present)
+node_modules/
+
+# IDEs
+.vscode/
+.idea/
+.cursor/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Non-runtime project content (not needed in image)
+tests/
+docs/
+deliverables/
+CLAUDE.md
