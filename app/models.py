@@ -59,11 +59,39 @@ class TaskCreate(BaseModel):
     @field_validator("title")
     @classmethod
     def validate_title(cls, value: str) -> str:
+        """Validate and normalize a task title for creation.
+
+        Delegates to ``_validate_title``.
+
+        Args:
+            value: The raw title string.
+
+        Returns:
+            str: The stripped title.
+
+        Raises:
+            ValueError: If the title is blank after stripping, or exceeds
+                200 characters.
+        """
         return _validate_title(value)
 
     @field_validator("tags")
     @classmethod
     def validate_tags(cls, value: Optional[list[str]]) -> Optional[list[str]]:
+        """Validate every tag in the list for creation.
+
+        Delegates to ``_validate_tags``/``_validate_tag`` for each entry.
+
+        Args:
+            value: The raw tag list, or ``None``.
+
+        Returns:
+            Optional[list[str]]: The unchanged tag list, or ``None``.
+
+        Raises:
+            ValueError: If any tag is empty/whitespace-only, exceeds 255
+                characters, or contains non-alphanumeric characters.
+        """
         return _validate_tags(value)
 
 
@@ -81,6 +109,19 @@ class TaskUpdate(BaseModel):
     @field_validator("title")
     @classmethod
     def validate_title(cls, value: Optional[str]) -> Optional[str]:
+        """Validate and normalize a task title if one was provided.
+
+        Args:
+            value: The raw title string, or ``None`` if title is not being
+                updated.
+
+        Returns:
+            Optional[str]: The stripped title, or ``None``.
+
+        Raises:
+            ValueError: If a non-``None`` title is blank after stripping, or
+                exceeds 200 characters.
+        """
         if value is None:
             return value
         return _validate_title(value)
@@ -88,6 +129,20 @@ class TaskUpdate(BaseModel):
     @field_validator("tags")
     @classmethod
     def validate_tags(cls, value: Optional[list[str]]) -> Optional[list[str]]:
+        """Validate every tag in the list if any were provided.
+
+        Delegates to ``_validate_tags``/``_validate_tag`` for each entry.
+
+        Args:
+            value: The raw tag list, or ``None``.
+
+        Returns:
+            Optional[list[str]]: The unchanged tag list, or ``None``.
+
+        Raises:
+            ValueError: If any tag is empty/whitespace-only, exceeds 255
+                characters, or contains non-alphanumeric characters.
+        """
         return _validate_tags(value)
 
 

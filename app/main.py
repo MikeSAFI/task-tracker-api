@@ -33,14 +33,26 @@ app.add_middleware(
 
 @app.get("/", include_in_schema=False)
 def serve_frontend() -> FileResponse:
-    """Serve the task board frontend from the project root."""
+    """Serve the static Task Tracker frontend.
+
+    Returns the pre-built ``frontend/index.html`` file so that navigating to
+    the API root in a browser loads the task board UI directly.
+
+    Returns:
+        FileResponse: The frontend's ``index.html`` file.
+    """
     frontend_path = Path(__file__).resolve().parent.parent / "frontend" / "index.html"
     return FileResponse(frontend_path)
 
 
 @app.get("/health", tags=["Health"])
 def health_check() -> dict:
-    """Returns service health status and current UTC timestamp."""
+    """Report service liveness.
+
+    Returns:
+        dict: A payload with ``status`` set to ``"ok"`` and ``timestamp``
+        set to the current UTC time in ISO 8601 format.
+    """
     return {
         "status": "ok",
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -54,6 +66,24 @@ def list_tasks(
     overdue: bool | None = None,
     tag: str | None = None,
 ) -> list[TaskResponse]:
+    """List tasks, optionally filtered by status, priority, overdue state, and/or tag.
+
+    Filters are combinable; when more than one is supplied, tasks must match
+    all of them (logical AND).
+
+    Args:
+        status: Only return tasks with this status.
+        priority: Only return tasks with this priority.
+        overdue: Only return tasks whose derived overdue state matches this value.
+        tag: Only return tasks that contain this exact tag.
+
+    Returns:
+        list[TaskResponse]: The matching tasks, each with ``overdue`` freshly
+        computed relative to today's date.
+
+    Example:
+        GET /tasks?status=ToDo&priority=High&tag=backend
+    """
     return storage.get_all_tasks(
         status=status,
         priority=priority,
@@ -64,6 +94,20 @@ def list_tasks(
 
 @app.get("/tasks/{task_id}", response_model=TaskResponse, tags=["tasks"])
 def get_task(task_id: str) -> TaskResponse:
+    """Retrieve a single task by id.
+
+    Args:
+        task_id: The id of the task to fetch.
+
+    Returns:
+        TaskResponse: The requested task.
+
+    Raises:
+        HTTPException: 404 if no task with ``task_id`` exists.
+
+    Example:
+        GET /tasks/{task_id}
+    """
     task = storage.get_task_by_id(task_id)
     if task is None:
         raise HTTPException(
@@ -75,12 +119,54 @@ def get_task(task_id: str) -> TaskResponse:
 
 @app.post("/tasks", response_model=TaskResponse, status_code=status.HTTP_201_CREATED, tags=["tasks"])
 def create_task(payload: TaskCreate) -> TaskResponse:
+    """Create a new task.
+
+    Args:
+        payload: The task fields to create. Field-level validation (title,
+            tags) is enforced by ``TaskCreate`` before this handler runs.
+
+    Returns:
+        TaskResponse: The newly created task, with ``overdue`` computed.
+
+    Raises:
+        HTTPException: 422 if ``due_date`` is set and earlier than today.
+
+    Example:
+        POST /tasks
+        {"title": "Write docs", "priority": "High"}
+    """
     validate_due_date_not_in_past(payload.due_date)
     return storage.add_task(payload)
 
 
 @app.patch("/tasks/{task_id}", response_model=TaskResponse, tags=["tasks"])
 def update_task(task_id: str, payload: TaskUpdate) -> TaskResponse:
+    """Partially update a task.
+
+    Only fields explicitly present in the request body are applied; omitted
+    fields are left unchanged. ``due_date`` is only re-validated against
+    today's date when it is present in the request AND differs from the
+    task's current ``due_date`` — patching other fields on a task that
+    already has a past due date is allowed. ``status`` changes are checked
+    against the allowed transition graph in
+    ``business_rules.VALID_TRANSITIONS``.
+
+    Args:
+        task_id: The id of the task to update.
+        payload: The partial set of fields to update.
+
+    Returns:
+        TaskResponse: The updated task.
+
+    Raises:
+        HTTPException: 404 if no task with ``task_id`` exists.
+        HTTPException: 422 if the new ``due_date`` is earlier than today, or
+            if ``status`` is not a valid transition from the current status.
+
+    Example:
+        PATCH /tasks/{task_id}
+        {"status": "InProgress"}
+    """
     due_date_in_request = "due_date" in payload.model_fields_set
     needs_existing = due_date_in_request or payload.status is not None
 
@@ -110,6 +196,20 @@ def update_task(task_id: str, payload: TaskUpdate) -> TaskResponse:
 
 @app.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["tasks"])
 def delete_task(task_id: str) -> None:
+    """Delete a task.
+
+    Args:
+        task_id: The id of the task to delete.
+
+    Returns:
+        None: Responds with 204 No Content on success.
+
+    Raises:
+        HTTPException: 404 if no task with ``task_id`` exists.
+
+    Example:
+        DELETE /tasks/{task_id}
+    """
     if storage.delete_task(task_id):
         return
     raise HTTPException(

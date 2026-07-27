@@ -1,29 +1,40 @@
-# Task Tracker API — Module 1
+# Task Tracker API — Module 4
 
-A learning-focused REST API built with **Python** and **FastAPI**.  
-Uses in-memory storage (no database) to focus on FastAPI fundamentals,
-Pydantic validation, and REST API design.
+A learning-focused REST API built with **Python**, **FastAPI**, and **Pydantic v2**.
+Task storage is in-memory (a module-level dict in `app/storage.py`) — there is no
+database, and data does not persist across a server restart. A static HTML/JS
+frontend (`frontend/index.html`) is served directly by the API at `/`.
+
+This is a learning project. It is **not** deployed anywhere, has **no
+authentication**, and is **not intended for production use**.
 
 **GitHub repository:** https://github.com/MikeSAFI/task-tracker-api
 
 ---
 
-## Project Structure
+## 1. Project Overview
 
-task-tracker-api/
-├── app/
-│ ├── init.py
-│ └── main.py
-├── .env.example
-├── .gitignore
-├── README.md
-└── requirements.txt
+The API exposes CRUD endpoints for tasks (`/tasks`), each with a title, status
+(`ToDo` / `InProgress` / `Done`), priority (`Low` / `Medium` / `High`), optional
+assignee, optional due date, and tags. Status changes are constrained to a fixed
+transition graph, and `overdue` is derived on every read from `due_date` — it is
+never stored. See [Project conventions and current limitations](#9-project-conventions-and-current-limitations)
+for the full rule set.
 
 ---
 
-## Setup
+## 2. Prerequisites
 
-**Prerequisites:** Python 3
+- **Python 3.11** — matches the version pinned in `.github/workflows/ci.yml`
+  and `Dockerfile`. Also confirmed working locally on Python 3.13.
+- **pip** (bundled with Python)
+- **git**
+- **Docker** — only required for [section 6](#6-run-with-docker); not needed
+  for local development.
+
+---
+
+## 3. Local setup
 
 ### 1. Clone / enter the project directory
 
@@ -54,17 +65,15 @@ python -m venv venv
 pip install -r requirements.txt
 ```
 
-### 4. Configure environment variables
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env` if you need a different port or environment label.
+`.env.example` is present in the repo, but nothing under `app/` reads
+environment variables (no `os.environ`/`dotenv` usage found) — the app doesn't
+currently need a `.env` file to run. `[VERIFY]`
 
 ---
 
-## Running the server
+## 4. Run the app locally
+
+From the repo root, with the virtual environment activated:
 
 ```bash
 uvicorn app.main:app --reload --port 8000
@@ -73,59 +82,180 @@ uvicorn app.main:app --reload --port 8000
 | Flag          | Purpose                                          |
 | ------------- | ------------------------------------------------ |
 | `--reload`    | Auto-restarts on code changes (development only) |
-| `--port 8000` | Matches the default in `.env.example`            |
+| `--port 8000` | Local dev port                                   |
 
 Default backend URL: http://localhost:8000
 
----
+**Task board (frontend):** http://localhost:8000/ — the API serves
+`frontend/index.html` directly from the root route.
 
-## Opening the frontend
+**Interactive API docs:** http://localhost:8000/docs (Swagger UI) or
+http://localhost:8000/redoc (ReDoc).
 
-With the backend running, open the task board in your browser at:
-
-http://localhost:8000/
-
-The API serves `frontend/index.html` from the root route (`/`).
-
-Alternatively, open `frontend/index.html` directly in a browser (or via a simple static file server). The page calls the API at `http://localhost:8000`, so the backend must still be running.
-
----
-
-## Test the /health endpoint
+**Smoke-test the health endpoint:**
 
 ```bash
-curl -s http://localhost:8000/health | python3 -m json.tool
+curl -s http://localhost:8000/health
 ```
 
-**Expected response shape:**
+Expected response shape:
 
 ```json
 {
   "status": "ok",
-  "timestamp": "2025-01-15T10:30:00.123456+00:00"
+  "timestamp": "2026-07-27T10:30:00.123456+00:00"
 }
 ```
 
 ---
 
-## Interactive API docs (Swagger UI)
+## 5. Run tests
 
-Open your browser at: http://localhost:8000/docs
+From the repo root, with the virtual environment activated:
 
-ReDoc alternative: http://localhost:8000/redoc
+```bash
+pytest -v
+```
+
+`pytest.ini` sets `pythonpath = .`, so tests import `app` as a top-level
+package without an install step.
+
+Run a single test file or test:
+
+```bash
+pytest tests/test_tasks.py -v
+pytest tests/test_tasks.py::test_patch_invalid_transition_todo_to_done_returns_422 -v
+```
+
+Run the Part A model verification script:
+
+```bash
+python -m tests.verify_a
+```
+
+Run it as `python -m tests.verify_a`, not `python tests/verify_a.py` — the
+script imports `app.models`, and running it as a bare script (rather than
+`-m`) does not put the repo root on `sys.path`, so it fails with
+`ModuleNotFoundError: No module named 'app'`. Confirmed by running both forms
+from a clean checkout.
 
 ---
 
-## Running tests
+## 6. Run with Docker
 
-From the `task-tracker-api` directory (with the virtual environment activated):
-
-```bash
-pytest -q
-```
-
-To run the Part A model verification script:
+From the repo root:
 
 ```bash
-python tests/verify_a.py
+docker build -t task-tracker-api .
+docker run --rm -p 8000:8000 task-tracker-api
 ```
+
+Then open http://localhost:8000/ the same as the local run.
+
+The image is a two-stage build (`python:3.11-slim`) that installs
+dependencies in a builder stage, then copies only `app/` and `frontend/` into
+a runtime stage that runs as a non-root user (`app`) and listens on port
+8000. `tests/`, `docs/`, `deliverables/`, `.env`, and `CLAUDE.md` are excluded
+from the image via `.dockerignore`. The container's `CMD` runs uvicorn
+**without** `--reload` — this is a plain container run for local use, not a
+deployment configuration.
+
+---
+
+## 7. CI workflow summary
+
+`.github/workflows/ci.yml` defines a single `test` job that runs on every
+`push` and `pull_request` (all branches, no path filters):
+
+1. Check out the repository (`actions/checkout@v4`).
+2. Set up Python 3.11 (`actions/setup-python@v5`).
+3. `pip install -r requirements.txt`.
+4. `pytest -v`.
+
+There is no linting step, no Docker build/push step, and no deployment step —
+CI only runs the test suite. `[VERIFY]` whether the most recent run on the
+default branch is currently green (not checked as part of this rewrite).
+
+---
+
+## 8. Project structure
+
+```
+task-tracker-api/
+├── app/
+│   ├── __init__.py
+│   ├── main.py            # FastAPI route handlers
+│   ├── models.py          # Pydantic schemas / enums
+│   ├── business_rules.py  # cross-field validation (status transitions, due dates)
+│   └── storage.py         # in-memory "database" + CRUD functions
+├── frontend/
+│   └── index.html         # static task board UI, served at "/"
+├── tests/
+│   ├── conftest.py        # client fixture + autouse storage reset
+│   ├── test_tasks.py
+│   └── verify_a.py        # Part A model verification script
+├── docs/
+│   ├── mini-adr.md        # architecture decisions (see section 10)
+│   ├── user-stories.md
+│   ├── prompt-log.md
+│   ├── prompts.md         # [VERIFY] purpose not documented in CLAUDE.md
+│   ├── reflection.md
+│   └── verification.md    # [VERIFY] purpose not documented in CLAUDE.md
+├── deliverables/          # course submission artifacts (docx/xlsx/md)
+├── .github/workflows/ci.yml
+├── Dockerfile
+├── .dockerignore
+├── requirements.txt
+├── pytest.ini
+├── .env.example
+└── CLAUDE.md
+```
+
+---
+
+## 9. Project conventions and current limitations
+
+**Conventions**
+
+- Four single-responsibility modules under `app/`: `models.py` (schemas),
+  `business_rules.py` (cross-field/stateful validation, raises
+  `HTTPException` directly), `storage.py` (in-memory CRUD), `main.py` (route
+  handlers — no business logic of their own).
+- All Pydantic models use `extra="forbid"`; unknown request fields get a 422.
+- `overdue` is never stored — it's recomputed from `due_date` vs. today's
+  date on every read.
+- `PATCH /tasks/{id}` only re-validates `due_date` when it's present in the
+  request **and** actually changed, so patching other fields on a task that
+  already has a past due date is allowed.
+- Status transitions are restricted to `ToDo→InProgress→Done→InProgress`; no
+  same-state transition and no skipping states.
+- Tags are a flat `list[str]`, alphanumeric only, ≤255 chars each.
+- Tests follow `test_<action>_<condition>_returns_<result>` naming, and an
+  autouse fixture resets in-memory storage before/after every test.
+
+**Current limitations**
+
+- **No persistence** — all data is lost on process restart; there is no
+  database.
+- **No authentication or authorization** on any endpoint.
+- **Not deployed** — the Dockerfile and CI only build/test locally; there is
+  no deployment or hosting configuration in this repo.
+- CORS is restricted to a fixed list of local dev origins (`localhost`/
+  `127.0.0.1` on ports `5500`, `5501`, `5173`, plus `null` for local file
+  access) — not suitable for other origins without code changes.
+- `requirements.txt` is UTF-16LE-encoded and contains duplicate
+  `pytest`/`httpx` entries. `pip install -r requirements.txt` handles this
+  fine (confirmed both in a local venv and inside the Docker build), but it's
+  unusual and worth normalizing to UTF-8 if the file is edited again.
+
+---
+
+## 10. Decisions and docs
+
+Architecture decisions (and rejected alternatives) for due dates, overdue
+filtering, and tags are recorded in [`docs/mini-adr.md`](docs/mini-adr.md) —
+check it before changing how those features are modeled.
+
+`docs/user-stories.md`, `docs/prompt-log.md`, `docs/prompts.md`,
+`docs/reflection.md`, and `docs/verification.md` are course-deliverable
+artifacts from an AI-assisted-coding curriculum, not living technical docs.

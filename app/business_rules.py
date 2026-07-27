@@ -13,6 +13,20 @@ VALID_TRANSITIONS: frozenset[tuple[TaskStatus, TaskStatus]] = frozenset({
 
 
 def validate_status_transition(current: TaskStatus, new: TaskStatus) -> None:
+    """Ensure a status change follows the allowed transition graph.
+
+    Valid transitions are ToDo->InProgress, InProgress->Done, and
+    Done->InProgress. Same-state transitions and any transition not listed
+    in ``VALID_TRANSITIONS`` (e.g. skipping a state) are rejected.
+
+    Args:
+        current: The task's current status.
+        new: The requested new status.
+
+    Raises:
+        HTTPException: 422 if ``(current, new)`` is not in
+            ``VALID_TRANSITIONS``.
+    """
     # Same -> same is invalid. Anything not in VALID_TRANSITIONS is invalid.
     if (current, new) not in VALID_TRANSITIONS:
         allowed = sorted({f"{f.value}->{t.value}" for f, t in VALID_TRANSITIONS})
@@ -23,6 +37,15 @@ def validate_status_transition(current: TaskStatus, new: TaskStatus) -> None:
 
 
 def validate_due_date_not_in_past(due_date: Optional[date]) -> None:
+    """Ensure a due date is not earlier than today.
+
+    Args:
+        due_date: The due date to validate, or ``None`` (which is always
+            valid).
+
+    Raises:
+        HTTPException: 422 if ``due_date`` is earlier than today.
+    """
     if due_date is not None and due_date < date.today():
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
