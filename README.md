@@ -259,3 +259,59 @@ check it before changing how those features are modeled.
 `docs/user-stories.md`, `docs/prompt-log.md`, `docs/prompts.md`,
 `docs/reflection.md`, and `docs/verification.md` are course-deliverable
 artifacts from an AI-assisted-coding curriculum, not living technical docs.
+
+---
+
+## Final Project
+
+Branch reviewed: `final-project`
+
+### What this submission demonstrates
+
+- Existing Task Tracker app still runs inside the intended course scope.
+- CI runs the pytest suite on push and/or pull request.
+- Docker image builds and runs with `/health` returning 200.
+- AI review, security, and ownership evidence is in `docs/`.
+
+### How to run locally
+
+From repo root, with `venv` activated:
+
+```bash
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+```
+
+Then open http://localhost:8000/ (Kanban board) and http://localhost:8000/health.
+
+### How to run tests
+
+```bash
+pytest -q
+```
+
+On Windows, if `pytest` is not on PATH: `.\venv\Scripts\python.exe -m pytest -q`.
+
+### How to run with Docker
+
+```bash
+docker build -t task-tracker-api .
+docker run --rm -p 8000:8000 task-tracker-api
+curl -s http://localhost:8000/health
+```
+
+PowerShell health check: `Invoke-RestMethod http://localhost:8000/health`.
+
+### Evidence files
+
+- [docs/release-evidence.md](docs/release-evidence.md)
+- [docs/final-ai-review.md](docs/final-ai-review.md)
+- [docs/ai-playbook.md](docs/ai-playbook.md)
+
+### AI assistance summary
+
+AI helped draft or review: CI, Docker, docs, security review grading, and debugging (including constrained FastAPI/tests/frontend work earlier in the course).
+
+I verified the work by: running pytest, reviewing diffs against ADRs/stories, Docker build/run and `/health`, and manual security checks (e.g. create-status behavior).
+
+One AI suggestion I rejected or corrected: Rejected storing an `overdue` flag (and a separate Tag entity) — overdue stays derived on read. Also corrected an early PATCH due-date gate so validation runs only when `due_date` is present **and** actually changed, so unrelated patches on already-past due dates are not blocked.

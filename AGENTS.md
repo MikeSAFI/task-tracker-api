@@ -65,3 +65,8 @@ Tags are a flat `list[str]` on the task (no separate Tag entity — see ADR-002)
 ## Docs
 
 `docs/mini-adr.md` records architecture decisions (and rejected alternatives) for each feature — check it before changing how due dates or tags are modeled. `docs/user-stories.md`, `docs/prompt-log.md`, and `docs/reflection.md` are course-deliverable artifacts from an AI-assisted-coding curriculum, not living technical docs.
+
+## Agent guardrails
+
+- **Read first:** Before changing behavior (especially due dates, tags, status transitions, or overdue), read `docs/mini-adr.md` and the relevant user stories; do not invent product rules that contradict those docs.
+- **Protect `app/` and `frontend/`:** Do not edit files under `app/` or `frontend/` unless the user explicitly asks for that change, or the task is a small, clearly scoped bug fix / security fix that is already supported by docs or failing tests. Prefer docs, tests, README, and course evidence files when the request is documentation or process work. If you must touch `app/` or `frontend/`, keep the diff minimal and explain why in the response (and in `docs/final-ai-review.md` when that file is in scope).

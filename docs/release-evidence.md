@@ -5,13 +5,13 @@
 - Date: 2026-08-04
 - Local app run command: `.\venv\Scripts\python.exe -m uvicorn app.main:app --reload --port 8000` (use the Python 3.13 `venv`, not `.venv` / Python 3.14)
 - /health result: `{"status":"ok","timestamp":"2026-08-04T16:11:58.762224+00:00"}` (HTTP 200 from running container on port 8000)
-- Frontend check: `GET /` returned HTTP 200 from the Docker image (`task-tracker-api` serving `frontend/index.html`)
+- Frontend check: Opened http://localhost:8000/ from the Docker image (`GET /` → HTTP 200 serving `frontend/index.html`); Kanban board with ToDo / InProgress / Done columns and create/edit task UI is still visible.
 - Test command: `.\venv\Scripts\python.exe -m pytest -q` (also `.\venv\Scripts\python.exe -m pytest tests/test_tasks.py -q`)
 - Test result: **47 passed** in 0.56s
 
 ## CI evidence
 - Workflow file: `.github/workflows/ci.yml`
-- Latest run link or note: Actions at https://github.com/MikeSAFI/task-tracker-api/actions (`gh` CLI not installed locally; workflow runs on `push` / `pull_request`)
+- Latest run link or note: https://github.com/MikeSAFI/task-tracker-api/actions/runs/30928899289 (CI on `final-project`, conclusion **success**, 2026-08-04)
 - Test command used by CI: `pytest -v` (after `pip install -r requirements.txt` on Python 3.11)
 - Shortcut check: no continue-on-error / no || true / pytest is not skipped. Confirmed — workflow has a single hard-fail `Run tests` step with `pytest -v` only.
 
