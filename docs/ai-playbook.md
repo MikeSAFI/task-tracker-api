@@ -37,5 +37,5 @@
 - For debugging I reach for: failing pytest and stack traces first, AI to propose a fix and me to verify the path and correct it when the first draft misses a real edge case like PATCH + unchanged due date.
 - For infrastructure I reach for: AI assisted Dockerfile / CI YAML drafts, then I verify they match how I run tests locally and treat the image as local packaging, not production deploy.
 - My one rule is: AI output is a draft until the requirement, the ADR, and the tests agree and I understand the path I am shipping.
--Never paste real customer data, production logs, credentials, or third party personal information into an AI prompt
+- Never paste: real customer data, production logs, credentials, or third-party personal information into an AI prompt.
 - I will re-read this playbook in 30 days, keep the rules that still match how I work, and update the parts I have learned more about.

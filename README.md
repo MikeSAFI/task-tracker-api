@@ -67,7 +67,7 @@ pip install -r requirements.txt
 
 `.env.example` is present in the repo, but nothing under `app/` reads
 environment variables (no `os.environ`/`dotenv` usage found) — the app doesn't
-currently need a `.env` file to run. `[VERIFY]`
+currently need a `.env` file to run.
 
 ---
 
@@ -172,9 +172,9 @@ deployment configuration.
 3. `pip install -r requirements.txt`.
 4. `pytest -v`.
 
-There is no linting step, no Docker build/push step, and no deployment step —
-CI only runs the test suite. `[VERIFY]` whether the most recent run on the
-default branch is currently green (not checked as part of this rewrite).
+There is no linting, Docker build/push, or deployment step.
+CI runs only the test suite.
+The latest successful CI evidence is recorded in `docs/release-evidence.md`.
 
 ---
 
@@ -243,10 +243,8 @@ task-tracker-api/
 - CORS is restricted to a fixed list of local dev origins (`localhost`/
   `127.0.0.1` on ports `5500`, `5501`, `5173`, plus `null` for local file
   access) — not suitable for other origins without code changes.
-- `requirements.txt` is UTF-16LE-encoded and contains duplicate
-  `pytest`/`httpx` entries. `pip install -r requirements.txt` handles this
-  fine (confirmed both in a local venv and inside the Docker build), but it's
-  unusual and worth normalizing to UTF-8 if the file is edited again.
+- `requirements.txt` is UTF-16LE-encoded.
+  `pip install -r requirements.txt` works, but normalize the file to UTF-8 if it is edited again.
 
 ---
 

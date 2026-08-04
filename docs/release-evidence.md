@@ -4,7 +4,7 @@
 - Branch: `final-project`
 - Date: 2026-08-04
 - Local app run command: `.\venv\Scripts\python.exe -m uvicorn app.main:app --reload --port 8000` (use the Python 3.13 `venv`, not `.venv` / Python 3.14)
-- /health result: `{"status":"ok","timestamp":"2026-08-04T16:11:58.762224+00:00"}` (HTTP 200 from running container on port 8000)
+- /health result: `{"status":"ok","timestamp":"2026-08-04T18:07:33.510969+00:00"}` (HTTP 200 from local `uvicorn` on port 8000 via the command above)
 - Frontend check: Opened http://localhost:8000/ from the Docker image (`GET /` → HTTP 200 serving `frontend/index.html`); Kanban board with ToDo / InProgress / Done columns and create/edit task UI is still visible.
 - Test command: `.\venv\Scripts\python.exe -m pytest -q` (also `.\venv\Scripts\python.exe -m pytest tests/test_tasks.py -q`)
 - Test result: **47 passed** in 0.56s
