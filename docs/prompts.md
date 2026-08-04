@@ -499,3 +499,68 @@ When a user creates a task with `POST /tasks`, FastAPI parses the request into `
 Authentication, authorization, database persistence, deployment configuration, tests, API documentation behavior, frontend implementation, and the exact business-rule logic are not visible from the files I read.
 
 >>
+#############################################################
+
+I wrote the playbook below myself. Review it for evidence and student voice, but do not rewrite it for me.
+Task:
+Check whether my playbook meets the Module 5 quality bar:
+- It is one page or close to one page.
+- It uses my own voice, not generic AI-policy language.
+- Each rule is backed by a specific course incident or observation.
+- It mentions practical review habits, not vague aspirations.
+- The Decision Card is fully filled in.
+- The never-paste rule names a concrete type of data.
+- The 30-day re-read commitment is present.
+Constraints:
+- Do not produce a replacement playbook.
+- Do not add evidence I did not provide.
+- Suggest minimal edits only.
+- If a rule lacks evidence, mark it "needs course evidence".
+Output format:
+Return a checklist table with columns:
+AI-Assisted Coding - Module 5 Prompt Library
+Requirement | Present / Missing | Evidence from my draft | Minimal edit
+My playbook draft:
+<<
+# Personal AI Coding Playbook
+
+## 1. When I reach for AI first
+
+- Drafting user stories, Mini ADRs, and strong constrained prompts before I touch code (ChatGPT helped me get acceptance criteria and prompt structure ready for Cursor Agent).
+- Project template that must stay consistent with the existing FastAPI style adding fields, wiring query params, fixtures, and named pytest cases once the ADR and stories are done.
+- Planning a feature against this repo (repo grounded plans, structured architecture context with AGENTS.md) and grading security findings so I can decide keep backlog noise instead of guessing.
+
+## 2. When I do not reach for AI
+
+- Final product calls: what “valid” means: no past due dates, tags alphanumeric ≤255, rejecting ADR alternatives like storing an overdue flag or adding a separate Tag entity.
+- Bugs that need me to own the path ex: PATCH still validating an unchanged past due date when the edit form resubmitted it, I tightened that myself after AI’s first approach.
+- Making a fix when the product rule is unclear ex: SEC-06 create-status / ToDo only. I backlog it instead of accepting a one line change I do not stand behind.
+
+## 3. My non-negotiables
+
+- I never paste real customer data, production logs, credentials, or third party personal information into an AI prompt.
+- Narrow prompts with hard file/scope limits, run pytest right after AI edits, treat output as a draft until stories, ADRs, and failing/passing tests agree.
+- Before I accept a change, I review the diff against the current requirement and decide whether I understand the changed path and if not, follow up or backlog, not ship.
+
+## 4. My review rules
+
+- Check AI output against acceptance criteria and Mini ADRs, reject scope drift and out of scope extras.
+- Prefer evidence: green suite, break test recovery, and live checks for security grades not “AI said so.”
+- For plans and architecture, prefer structured / repo grounded context over vague chat, drop noise (ex: SEC-05) and accept course scope limits no auth explicitly.
+
+## 5. What I am still figuring out
+
+- Fully owning every frontend innerHTML path (SEC-01 / SEC-07). I can explain the board flow but XSS escaping is still on my security backlog.
+- When create must force ToDo vs allowing any initial status confirmed behavior, but no safe one line fix until the product rule is decided.
+- How much context to give for each job (Strategy B for architecture docs vs targeted anchor files for a single business rule wiring task). I have a rule, but I still calibrate it task by task.
+
+## Decision Card
+
+- For a new feature I reach for: ChatGPT for stories/ADRs/strong prompts, then Cursor Agent with constrained, file scoped implementation (and a repo-grounded plan when sequencing matters).
+- For a code review I reach for: checklist / security review prompts, then my own grade (Valid / Noise / course scope) with file evidence before keep or backlog.
+- For debugging I reach for: failing pytest and stack traces first, AI to propose a fix and me to verify the path and correct it when the first draft misses a real edge case like PATCH + unchanged due date.
+- For infrastructure I reach for: AI assisted Dockerfile / CI YAML drafts, then I verify they match how I run tests locally and treat the image as local packaging, not production deploy.
+- I will never paste real customer data, production logs, credentials, or third party personal info into an AI tool.
+- My one rule is: AI output is a draft until the requirement, the ADR, and the tests agree and I understand the path I am shipping.
+
+>>
