@@ -211,3 +211,45 @@ Output format:
 2. Minimal unified diff
 3. Why this change is limited
 4. Verification step I should run or document
+##############################################################
+Walk me through the following AI-generated code block line by line.
+For each line or small group of lines, explain:
+1. What it does.
+2. Why it is written this way.
+3. What would break if it were removed or changed.
+4. Any assumption, risk, or library behavior I should verify.
+Constraints:
+- Use beginner-friendly but precise language.
+- If the explanation would require seeing surrounding files, ask for them.
+- If you are unsure, say so. Do not use vague phrases such as "this is standard" without explaining why.
+- Do not rewrite the code unless I ask.
+Output format:
+Return a table with columns:
+Line(s) | What it does | Why it is there | What could break | Do I own this yet?
+Code block:
+```
+def validate_status_transition(current: TaskStatus, new: TaskStatus) -> None:
+    """Ensure a status change follows the allowed transition graph.
+
+    Valid transitions are ToDo->InProgress, InProgress->Done, and
+    Done->InProgress. Same-state transitions and any transition not listed
+    in ``VALID_TRANSITIONS`` (e.g. skipping a state) are rejected.
+
+    Args:
+        current: The task's current status.
+        new: The requested new status.
+
+    Raises:
+        HTTPException: 422 if ``(current, new)`` is not in
+            ``VALID_TRANSITIONS``.
+    """
+    # Same -> same is invalid. Anything not in VALID_TRANSITIONS is invalid.
+    if (current, new) not in VALID_TRANSITIONS:
+        allowed = sorted({f"{f.value}->{t.value}" for f, t in VALID_TRANSITIONS})
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Invalid status transition from {current.value} to {new.value}. Allowed transitions: {allowed}",
+        )
+
+
+```
